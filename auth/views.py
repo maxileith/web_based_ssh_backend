@@ -27,7 +27,7 @@ def login(request):
                 "token": token
             }))
         else:
-            return HttpResponse(status=403)
+            return HttpResponse(status=401)
 
 
 def register(request):
@@ -51,4 +51,18 @@ def register(request):
             serializer = UserSerializer(user)
             return JsonResponse(serializer.data)
 
-    return HttpResponse(status=403)
+    return HttpResponse(status=401)
+
+
+def verify(request):
+    if request.method == "GET":
+
+        if request.headers["Token"]:
+            print(request.headers)
+            try:                
+                payload = jwt.decode(request.headers["Token"], "ha", algorithms=["HS256"])
+                return JsonResponse(json.dumps({ "success": "true"}));
+            except:
+                return JsonResponse(json.dumps({ "success": "false"}));
+                
+    return HttpResponse(status=401)
