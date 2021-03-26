@@ -22,7 +22,7 @@ class SSHClient:
         self.input = input
 
     def verify_host_key(self, t):
-        working_dir = os.path.dirname(os.path.abspath(__file__))
+        working_dir = os.path.dirname(os.path.realpath(__file__))
         file_name = "known_hosts"
         complete_path = os.path.join(working_dir, file_name)
         keys = paramiko.util.load_host_keys(complete_path)
@@ -36,7 +36,7 @@ class SSHClient:
 
             if add.capitalize() == 'Y':
                 keys.add(hostname=self.hostname, keytype='ssh-rsa', key=key)
-                keys.save('known_hosts')
+                keys.save(complete_path)
                 self.output.write("*** INFO: Added host key to known hosts!")
             else:
                 sys.exit(1)
@@ -51,7 +51,7 @@ class SSHClient:
             if update.capitalize() == 'Y':
                 del keys[self.hostname]
                 keys.add(hostname=self.hostname, keytype='ssh-rsa', key=key)
-                keys.save('known_hosts')
+                keys.save(complete_path)
                 self.output.write("*** Info: Host key updated!")
             else:
                 sys.exit(1)

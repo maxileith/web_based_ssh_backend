@@ -18,9 +18,7 @@
 
       sshSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
-        document.querySelector("#ssh-log").value += String.fromCharCode(
-          data.ascii
-        );
+        document.querySelector("#ssh-log").value += data.ascii;
       };
 
       sshSocket.onclose = function (e) {
@@ -30,17 +28,6 @@
 
       const messageInputDom = document.querySelector("#ssh-message-input");
 
-      /*document.addEventListener("beforeinput", function (e) {
-        console.log(e);
-        e.preventDefault();
-        //if (ctrl) e.keyCode -= 64;
-        sshSocket.send(
-          JSON.stringify({
-            ascii: e.key,
-          })
-        );
-      });*/
-
       document.addEventListener("keydown", function (e) {
         e.preventDefault();
         console.log(e.code);
@@ -48,6 +35,11 @@
           ctrl = true;
           console.log("ctrl down");
         }
+        sshSocket.send(
+          JSON.stringify({
+            ascii: e.code,
+          })
+        );
       });
 
       document.addEventListener("keyup", function (e) {

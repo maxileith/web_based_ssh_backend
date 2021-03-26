@@ -5,6 +5,7 @@ from channels.generic.websocket import WebsocketConsumer
 from .ssh_client import SSHClient
 import io
 import threading
+from asgiref.sync import async_to_sync
 
 
 class SSHConsumer(WebsocketConsumer):
@@ -28,13 +29,13 @@ class SSHConsumer(WebsocketConsumer):
             'ascii': text_data_json["ascii"]
         }))
 
-        self.channel_layer.send(
+        async_to_sync(self.channel_layer.send)(
             "ssh-session",
             {
-                "type": "test_print",
+                "type": "test.print",
                 "text": "blabla",
             }
-        )
+        );
 
 
 class SSHSessionConsumer(SyncConsumer):
