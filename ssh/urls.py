@@ -15,9 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import index, websocket_test
+from .views import index
 
 urlpatterns = [
-    path('createSession', index, name="index"),
-    path('websocket', websocket_test),
+    path('', index, name="index"),
 ]

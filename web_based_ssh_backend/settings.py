@@ -123,8 +123,8 @@ STATIC_URL = '/static/'
 
 ASGI_APPLICATION = "web_based_ssh_backend.asgi.application"
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
-}
+# CHANNEL_LAYERS = {
+#    "default": {
+#        "BACKEND": "channels.layers.InMemoryChannelLayer"
+#    }
+# }

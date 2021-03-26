@@ -15,7 +15,8 @@ from django.core.asgi import get_asgi_application
 
 from ssh import routing, consumers
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web_based_ssh_backend.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE',
+                      'web_based_ssh_backend.settings')
 
 application = ProtocolTypeRouter({
     'http': get_asgi_application(),
@@ -23,9 +24,9 @@ application = ProtocolTypeRouter({
         URLRouter(
             routing.websocket_urlpatterns,
         )
-    ),
-    'channel': ChannelNameRouter({
-        "ssh-session": consumers.SSHSession.as_asgi(),
-    })
+    )  # ,
+    # 'channel': ChannelNameRouter({
+    #    "ssh-session": consumers.SSHSession.as_asgi(),
+    # })
 })
 # application = get_asgi_application()
