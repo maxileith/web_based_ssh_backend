@@ -1,6 +1,8 @@
+aioredis==1.3.1
 alabaster==0.7.12
 asgiref==3.3.1
 astroid==2.5.1
+async-timeout==3.0.1
 attrs==20.3.0
 autobahn==21.3.1
 Automat==20.2.0
@@ -10,11 +12,13 @@ bcrypt==3.2.0
 certifi==2020.12.5
 cffi==1.14.5
 channels==3.0.3
+channels-redis==3.2.0
 constantly==15.1.0
 cryptography==3.4.6
 daphne==3.0.1
 Django==3.1.7
 docutils==0.16
+hiredis==1.1.0
 hyperlink==21.0.0
 idna==3.1
 imagesize==1.2.0
@@ -24,6 +28,7 @@ Jinja2==2.11.2
 lazy-object-proxy==1.5.2
 MarkupSafe==1.1.1
 mccabe==0.6.1
+msgpack==1.0.2
 paramiko==2.7.2
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
@@ -44,7 +49,9 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.4
 sqlparse==0.4.1
 toml==0.10.2
+tornado==6.0.4
 Twisted==21.2.0
 txaio==21.2.1
+webssh==1.5.3
 wrapt==1.12.1
 zope.interface==5.2.0
