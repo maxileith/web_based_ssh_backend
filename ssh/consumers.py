@@ -1,4 +1,6 @@
 import json
+
+from channels.consumer import SyncConsumer
 from channels.generic.websocket import WebsocketConsumer
 from .ssh_client import SSHClient
 import io
@@ -25,3 +27,16 @@ class SSHConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps({
             'ascii': text_data_json["ascii"]
         }))
+
+        self.channel_layer.send(
+            "ssh-session",
+            {
+                "type": "test_print",
+                "text": "blabla",
+            }
+        )
+
+
+class SSHSessionConsumer(SyncConsumer):
+    def test_print(self, message):
+        print("Test: ", message["text"])
