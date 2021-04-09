@@ -6,9 +6,47 @@ import termios
 import tty
 import select
 
+import threading
+
+import datetime
+
 import paramiko
 
 
+class AppSSHClient(threading.Thread):
+
+    def __init__(self, ssh_consumer):
+        threading.Thread.__init__(self)
+        self.parent_thread = ssh_consumer
+
+    def run(self):
+
+        client = paramiko.client.SSHClient()
+
+        # loading custom host keys file
+        working_dir = os.path.dirname(os.path.realpath(__file__))
+        file_name = "known_hosts"
+        complete_path = os.path.join(working_dir, file_name)
+        client.load_host_keys(complete_path)
+
+        client.connect(hostname='10.0.0.3', username="root", password="")
+
+        channel = client.invoke_shell()
+
+        while not channel.closed and self.parent_thread.run:
+
+            if channel.recv_ready():
+                r = u(channel.recv(1024))
+                self.parent_thread.output_queue.put(r)
+
+            if channel.send_ready() and not self.parent_thread.input_queue.empty():
+                channel.send(u(self.parent_thread.input_queue.get()))
+
+
+if __name__ == "__main__":
+    AppSSHClient()
+
+"""
 class SSHClient:
 
     def __init__(self, hostname, username='root', password='', port=22, rsa_path=None, rsa_password='', output=sys.stdout, input=sys.stdin):
@@ -139,7 +177,7 @@ class SSHClient:
                 pass
             sys.exit(1)
 
-
 if __name__ == '__main__':
     client = SSHClient(hostname='10.0.0.3')
     client.start()
+"""
