@@ -25,8 +25,8 @@ application = ProtocolTypeRouter({
             routing.websocket_urlpatterns,
         )
     ),
-    'channel': ChannelNameRouter({
-        "ssh-session": consumers.SSHSessionConsumer.as_asgi(),
-    })
+    # 'channel': ChannelNameRouter({
+    #    "ssh-session": consumers.SSHSessionConsumer.as_asgi(),
+    # })
 })
 # application = get_asgi_application()

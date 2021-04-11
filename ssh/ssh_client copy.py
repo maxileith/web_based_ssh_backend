@@ -8,14 +8,21 @@ import tty
 import select
 from time import sleep
 
+import threading
+
 import datetime
 
 import paramiko
 
 
-class AppSSHClient():
+class AppSSHClient(threading.Thread):
 
     def __init__(self, ssh_consumer):
+        threading.Thread.__init__(self)
+        self.parent_thread = ssh_consumer
+
+    def run(self):
+
         client = paramiko.client.SSHClient()
 
         # loading custom host keys file
