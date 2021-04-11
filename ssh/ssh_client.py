@@ -7,43 +7,103 @@ import termios
 import tty
 import select
 from time import sleep
+import queue
+from io import StringIO
 
 import paramiko
 
 
-def ssh_task(consumer):
-    client = paramiko.client.SSHClient()
-
-    # loading custom host keys file
-    working_dir = os.path.dirname(os.path.realpath(__file__))
-    file_name = "known_hosts"
-    complete_path = os.path.join(working_dir, file_name)
-    client.load_host_keys(complete_path)
-
-    client.connect(hostname='10.0.0.3', username="root", password="")
-
-    channel = client.invoke_shell()
-
-    while not channel.closed and consumer.run:
-
-        sleep(.02)
-
-        # output of client
-        if channel.recv_ready():
-            r = u(channel.recv(1024))
-            consumer.send(text_data=json.dumps({
-                'data': r
-            }))
-
-        # input to client
-        if channel.send_ready() and not consumer.input_queue.empty():
-            channel.send(u(consumer.input_queue.get()))
-
-    client.close()
-
-
-"""
 class SSHClient:
+
+    INTERVAL = .02
+
+    def __init__(self, consumer, hostname='localhost', username='root', password='', port=22, rsa_path=None):
+        self.consumer = consumer
+        self.hostname = hostname
+        self.username = username
+        self.password = password
+        self.port = port
+        self.rsa_path = rsa_path
+        self.input_queue = queue.Queue()
+        self.running = True
+
+    def run(self):
+        self.client = paramiko.SSHClient()
+        self.__load_host_keys()
+        if not self.__is_host_key_valid():
+            return
+        self.__print("1")
+        self.client.connect(hostname=self.hostname, username=self.username,
+                            password=self.password, port=self.port, key_filename=self.rsa_path)
+        self.__print("2")
+        self.__interactive_shell()
+        self.client.close()
+
+    def input(self, x):
+        self.input_queue.put(x)
+
+    def stop(self):
+        self.running = False
+
+    def __load_host_keys(self):
+        # get the current working directory
+        working_dir = os.path.dirname(os.path.realpath(__file__))
+        # name of known hosts file
+        file_name = "known_hosts"
+        complete_path = os.path.join(working_dir, file_name)
+        # load host keys
+        self.client.load_host_keys(complete_path)
+
+    def __print(self, txt):
+        self.__send(u(txt))
+
+    def __println(self, txt):
+        self.__print(txt)
+        self.__send(u('\r\n'))
+
+    def __prompt(self, prompt):
+        # send text
+        self.__print(prompt)
+        response_stream = StringIO()
+
+        while self.running:
+            sleep(self.INTERVAL)
+
+            if not self.input_queue.empty():
+                r = u(self.input_queue.get())
+                if r == '\r':
+                    break
+                response_stream.write(r)
+                response_stream.flush()
+                self.__send(r)
+
+        response_text = response_stream.getvalue()
+        response_stream.close()
+
+        return response_text
+
+    def __interactive_shell(self):
+        channel = self.client.invoke_shell()
+
+        while not channel.closed and self.running:
+            sleep(self.INTERVAL)
+
+            # output of client
+            if channel.recv_ready():
+                r = u(channel.recv(1024))
+                self.__send(r)
+
+            # input to client
+            if channel.send_ready() and not self.input_queue.empty():
+                channel.send(u(self.input_queue.get()))
+
+    def __send(self, x):
+        self.consumer.send(text_data=json.dumps({
+            'data': x
+        }))
+
+
+class SSSHClient:
 
     def __init__(self, hostname, username='root', password='', port=22, rsa_path=None, rsa_password='', output=sys.stdout, input=sys.stdin):
         self.hostname = hostname
@@ -172,8 +232,3 @@ class SSHClient:
             except:
                 pass
             sys.exit(1)
-
-if __name__ == '__main__':
-    client = SSHClient(hostname='10.0.0.3')
-    client.start()
-"""
