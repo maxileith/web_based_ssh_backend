@@ -11,6 +11,7 @@ class SSHClientController:
 
     FPS = 30
     INTERVAL = 1.0/FPS
+    TIMEOUT = 15
 
     def __init__(self, consumer, hostname='localhost', username='root', password='', port=22, rsa_path=None):
         self.consumer = consumer
@@ -73,7 +74,9 @@ class SSHClientController:
         self.__println("establishing the connection ...")
         try:
             self.client.connect(hostname=self.hostname, username=self.username,
-                                password=self.password, port=self.port, key_filename=self.rsa_path)
+                                password=self.password, port=self.port,
+                                key_filename=self.rsa_path, timeout=self.TIMEOUT,
+                                look_for_keys=False, auth_timeout=self.TIMEOUT)
             return True
         except HostKeyError:
             self.__println("host key error")
@@ -91,6 +94,8 @@ class SSHClientController:
             # output of client
             if channel.recv_ready():
                 r = u(channel.recv(1024))
+                if len(r) == 0:
+                    break
                 self.__send(r)
 
             # input to client
