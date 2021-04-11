@@ -1,15 +1,9 @@
 import json
-import socket
-import sys
 import os
-from paramiko.py3compat import input as prompt_input, u
-import termios
-import tty
-import select
+from paramiko.py3compat import u
 from time import sleep
 import queue
 from io import StringIO
-
 import paramiko
 
 
@@ -32,9 +26,11 @@ class SSHClientController:
         key_policy = HostKeyChecker(self.__println, self.__prompt)
         self.client.set_missing_host_key_policy(policy=key_policy)
         if not self.__connect():
+            self.consumer.close()
             return
         self.__interactive_shell()
         self.client.close()
+        self.consumer.close()
 
     def input(self, x):
         self.input_queue.put(x)
@@ -73,6 +69,7 @@ class SSHClientController:
         return response_text
 
     def __connect(self):
+        self.__println("establishing the connection ...")
         try:
             self.client.connect(hostname=self.hostname, username=self.username,
                                 password=self.password, port=self.port, key_filename=self.rsa_path)
@@ -117,7 +114,6 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
         # check if key is known, changed or unknown
         case = self.__identify_case(hostname, known_host_keys, key)
         # ask the user what to do if needed
-        self.__println(case)
         if case == "unknown":
             self.__handle_unknown(hostname, known_host_keys,
                                   key, known_host_keys_path)
