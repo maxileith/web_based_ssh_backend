@@ -9,7 +9,8 @@ import paramiko
 
 class SSHClientController:
 
-    INTERVAL = .02
+    FPS = 30
+    INTERVAL = 1.0/FPS
 
     def __init__(self, consumer, hostname='localhost', username='root', password='', port=22, rsa_path=None):
         self.consumer = consumer
