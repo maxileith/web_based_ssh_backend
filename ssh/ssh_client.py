@@ -30,12 +30,12 @@ class SSHClient:
     def run(self):
         self.client = paramiko.SSHClient()
         self.__load_host_keys()
-        if not self.__is_host_key_valid():
-            return
-        self.__print("1")
+        # if not self.__is_host_key_valid():
+        #    return
+        # self.__print("1")
         self.client.connect(hostname=self.hostname, username=self.username,
                             password=self.password, port=self.port, key_filename=self.rsa_path)
-        self.__print("2")
+        # self.__print("2")
         self.__interactive_shell()
         self.client.close()
 
