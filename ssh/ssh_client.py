@@ -13,7 +13,7 @@ class SSHClientController:
     INTERVAL = 1.0/FPS
     TIMEOUT = 15
 
-    def __init__(self, consumer, hostname='localhost', username='root', password='', port=22, rsa_path=None):
+    def __init__(self, consumer, hostname=None, username=None, password=None, port=22, rsa_path=None):
         self.consumer = consumer
         self.hostname = hostname
         self.username = username

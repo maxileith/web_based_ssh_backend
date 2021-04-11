@@ -9,7 +9,7 @@ class SSHConsumer(WebsocketConsumer):
 
     def connect(self):
         self.ssh_client = SSHClientController(
-            self, "10.0.0.3")
+            self, hostname="10.0.0.3", username="root", password="")
 
         self.accept()
 
