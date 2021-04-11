@@ -8,40 +8,39 @@ import tty
 import select
 from time import sleep
 
-import datetime
-
 import paramiko
 
 
-class AppSSHClient():
+def ssh_task(consumer):
+    client = paramiko.client.SSHClient()
 
-    def __init__(self, ssh_consumer):
-        client = paramiko.client.SSHClient()
+    # loading custom host keys file
+    working_dir = os.path.dirname(os.path.realpath(__file__))
+    file_name = "known_hosts"
+    complete_path = os.path.join(working_dir, file_name)
+    client.load_host_keys(complete_path)
 
-        # loading custom host keys file
-        working_dir = os.path.dirname(os.path.realpath(__file__))
-        file_name = "known_hosts"
-        complete_path = os.path.join(working_dir, file_name)
-        client.load_host_keys(complete_path)
+    client.connect(hostname='10.0.0.3', username="root", password="")
 
-        client.connect(hostname='10.0.0.3', username="root", password="")
+    channel = client.invoke_shell()
 
-        channel = client.invoke_shell()
+    while not channel.closed and consumer.run:
 
-        while not channel.closed and self.parent_thread.run:
+        sleep(.02)
 
-            while channel.recv_ready():
-                r = u(channel.recv(1024))
-                self.parent_thread.send(text_data=json.dumps({
-                    'data': r
-                }))
+        # output of client
+        if channel.recv_ready():
+            r = u(channel.recv(1024))
+            consumer.send(text_data=json.dumps({
+                'data': r
+            }))
 
-            while channel.send_ready() and not self.parent_thread.input_queue.empty():
-                channel.send(u(self.parent_thread.input_queue.get()))
+        # input to client
+        if channel.send_ready() and not consumer.input_queue.empty():
+            channel.send(u(consumer.input_queue.get()))
 
+    client.close()
 
-if __name__ == "__main__":
-    AppSSHClient()
 
 """
 class SSHClient:

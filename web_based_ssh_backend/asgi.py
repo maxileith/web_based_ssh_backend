@@ -10,10 +10,10 @@ https://docs.djangoproject.com/en/3.1/howto/deployment/asgi/
 import os
 
 from channels.auth import AuthMiddlewareStack
-from channels.routing import ProtocolTypeRouter, URLRouter, ChannelNameRouter
+from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 
-from ssh import routing, consumers
+import ssh.routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
                       'web_based_ssh_backend.settings')
@@ -22,11 +22,7 @@ application = ProtocolTypeRouter({
     'http': get_asgi_application(),
     'websocket': AuthMiddlewareStack(
         URLRouter(
-            routing.websocket_urlpatterns,
+            ssh.routing.websocket_urlpatterns,
         )
-    ),
-    # 'channel': ChannelNameRouter({
-    #    "ssh-session": consumers.SSHSessionConsumer.as_asgi(),
-    # })
+    )
 })
-# application = get_asgi_application()
