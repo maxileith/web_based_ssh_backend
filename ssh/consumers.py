@@ -2,13 +2,14 @@ import json
 from channels.generic.websocket import WebsocketConsumer
 import threading
 
-from .ssh_client import SSHClient
+from .ssh_client import SSHClientController
 
 
 class SSHConsumer(WebsocketConsumer):
 
     def connect(self):
-        self.ssh_client = SSHClient(self, "10.0.0.3")
+        self.ssh_client = SSHClientController(
+            self, "10.0.0.3")
 
         self.accept()
 

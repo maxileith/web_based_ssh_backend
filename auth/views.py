@@ -22,7 +22,8 @@ def login(request):
                 "username": username,
             }
             #  {expiresIn: "4hr"}
-            token = jwt.encode(payload, "ha", algorithm="HS256", headers={"expiresIn": "4hr"})
+            token = jwt.encode(payload, "ha", algorithm="HS256",
+                               headers={"expiresIn": "4hr"})
             return HttpResponse(json.dumps({
                 "token": token
             }))
@@ -60,11 +61,11 @@ def verify(request):
         if request.headers["Token"]:
             print(request.headers)
             print(request.headers["Token"])
-            try:                
-                jwt.decode(request.headers["Token"], "ha", algorithms=["HS256"])
-                print('läuft')
-                return HttpResponse(json.dumps({ "success": "true"}))
+            try:
+                jwt.decode(request.headers["Token"],
+                           "ha", algorithms=["HS256"])
+                return HttpResponse(json.dumps({"success": "true"}))
             except:
-                return HttpResponse(json.dumps({ "success": "false"}))
-                
+                return HttpResponse(json.dumps({"success": "false"}))
+
     return HttpResponse(status=401)
