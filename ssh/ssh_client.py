@@ -88,19 +88,27 @@ class SSHClientController:
     def __interactive_shell(self):
         channel = self.client.invoke_shell()
 
+        # output ot client
+        def __ouput():
+            while channel.recv_ready():
+                r = u(channel.recv(1024))
+                if len(r) == 0:
+                    return False
+                self.__send(r)
+            return True
+
+        # input from client
+        def __input():
+            while channel.send_ready() and not self.input_queue.empty():
+                channel.send(u(self.input_queue.get()))
+
         while not channel.closed and self.running:
             sleep(self.INTERVAL)
 
-            # output of client
-            if channel.recv_ready():
-                r = u(channel.recv(1024))
-                if len(r) == 0:
-                    break
-                self.__send(r)
+            if not __ouput():
+                break
 
-            # input to client
-            if channel.send_ready() and not self.input_queue.empty():
-                channel.send(u(self.input_queue.get()))
+            __input()
 
     def __send(self, x):
         self.consumer.send(text_data=json.dumps({
