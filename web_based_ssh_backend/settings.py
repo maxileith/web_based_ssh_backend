@@ -37,8 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'saved_sessions.apps.SavedSessionsConfig',
+    'ssh.apps.SshConfig',
+    'rest_framework',
     'channels',
-    'ssh',
     'corsheaders',
 ]
 
@@ -125,19 +127,12 @@ STATIC_URL = '/static/'
 
 ASGI_APPLICATION = "web_based_ssh_backend.asgi.application"
 
-# CHANNEL_LAYERS = {
-#    "default": {
-#        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#        'CONFIG': {
-#            "hosts": [('127.0.0.1', 6379)],
-#        },
-#    }
-# }
+CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOWED_ORIGINS = [
-    "https://example.com",
-    "https://webssh.leith.de",
+    # behind reverse proxy anyway
+    # "https://webssh.leith.de",
     "http://localhost:3000",
-    "http://127.0.0.1:3000"
+    "http://127.0.0.1:3000",
 ]
 
 CORS_ALLOW_HEADERS = [
