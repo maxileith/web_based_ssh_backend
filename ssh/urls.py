@@ -17,6 +17,4 @@ Including another URLconf
 from django.urls import path
 from . import views
 
-urlpatterns = [
-    path('<int:ssh_session>/', views.index, name="index"),
-]
+urlpatterns = []
