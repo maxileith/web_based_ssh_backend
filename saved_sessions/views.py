@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from .models import SSHSession
 from .serializers import SSHSessionSerializer
+import json
 
 
 @api_view(['GET'])
@@ -82,6 +83,31 @@ def details(request, id):
 
     # create a new saved session
     elif request.method == 'PUT':
+        # deserialize json
+        json_body = json.loads(request.body)
+        session_serializer = SSHSessionSerializer(data=json_body)
+
+        if session_serializer.is_valid():
+            new_instance = session_serializer.create(validated_data=session_serializer.validated_data)
+
+            new_instance_serializer = SSHSessionSerializer(new_instance)
+
+            return JsonResponse(
+                {
+                    'message': 'operation was successful',
+                    'details': new_instance_serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return JsonResponse(
+                {
+                    'message': 'something went wrong',
+                    'details': {}
+                },
+                status=status.HTTP_409_CONFLICT
+            )
+
 
         # request body in dictionary
         # {
@@ -94,33 +120,7 @@ def details(request, id):
         # }
         print(request.data)
 
-        successful = True
-
-        if not successful:
-            # something went wrong
-            return JsonResponse(
-                {
-                    'message': 'something went wrong',
-                    'details': {}
-                },
-                status=status.HTTP_409_CONFLICT
-            )
-        else:
             # successfull (return of the saved session)
-            return JsonResponse(
-                {
-                    'message': 'operation was successful',
-                    'details': {
-                        'id': 0,
-                        'title': 'Debian Buster Server',
-                        'hostname': 'example.org',
-                        'port': 22,
-                        'username': 'root',
-                        'description': 'explaining text'
-                    }
-                },
-                status=status.HTTP_201_CREATED
-            )
 
     # update a saved session
     elif request.method == 'PATCH':
@@ -135,15 +135,19 @@ def details(request, id):
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
+        json_body = json.loads(request.body)
+        session_serializer = SSHSessionSerializer(data=json_body)
 
-        session_serializer = SSHSessionSerializer(data=request.body)
         if session_serializer.is_valid():
-            updated_session_object = session_serializer.update(selected_session)
+            print(session_serializer.validated_data)
+            updated_session_object = session_serializer.update(selected_session,
+                                                               validated_data=session_serializer.validated_data)
 
             # TODO: check whether it is necessary to create a new serializer
             result_serializer = SSHSessionSerializer(updated_session_object)
             # need to add partial
             # successfull (return of the saved session)
+            # the password should probably removed from the response
             return JsonResponse(
                 {
                     "message": "operation was successful",
@@ -159,45 +163,6 @@ def details(request, id):
                 },
                 status=status.HTTP_409_CONFLICT
             )
-
-        # request body in dictionary
-        # {
-        #     'title': 'Debian Buster Server',
-        #     'hostname': 'example.org',
-        #     'port': 22,
-        #     'username': 'root',
-        #     'description': 'explaining text',
-        #     'password': 'iaspdgf'
-        # }
-        # print(request.data)
-        #
-        # successful = True
-        #
-        # if not successful:
-        #     # something went wrong
-        #     return JsonResponse(
-        #         {
-        #             'message': 'something went wrong',
-        #             'details': {}
-        #         },
-        #         status=status.HTTP_409_CONFLICT
-        #     )
-        # else:
-        #     # successfull (return of the saved session)
-        #     return JsonResponse(
-        #         {
-        #             'message': 'operation was successful',
-        #             'details': {
-        #                 'id': 0,
-        #                 'title': 'Debian Buster Server',
-        #                 'hostname': 'example.org',
-        #                 'port': 22,
-        #                 'username': 'root',
-        #                 'description': 'explaining text'
-        #             }
-        #         },
-        #         status=status.HTTP_200_OK
-        #     )
 
     # delete a saved session
     elif request.method == 'DELETE':
