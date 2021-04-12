@@ -8,6 +8,16 @@ from rest_framework.decorators import api_view
 
 @api_view(['GET'])
 def all(request):
+    """all [summary]
+
+    - returns all SSH sessions saved for the user on HTTP GET Request
+
+    Args:
+        request (request): request object of the http request
+
+    Returns:
+        JsonResponse: returns JSON object and HTTP status code
+    """
 
     # load all session
     if request.method == 'GET':
@@ -55,6 +65,20 @@ def all(request):
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 def details(request, id):
+    """details [summary]
+
+    - returns a specific SSH sessions on HTTP GET Request
+    - creates a SSH session on HTTP PUT Request
+    - updates a SSH session on HTTP PATCH Request
+    - deletes a SSG session on HTTP DELETE Request
+
+    Args:
+        request (request): request object of the http request
+        id (Integer): identifier of the SSH session 
+
+    Returns:
+        JsonResponse: returns JSON object and HTTP status code
+    """
 
     # load details of a saved session
     if request.method == 'GET':
