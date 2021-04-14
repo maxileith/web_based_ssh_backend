@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view
 import os
 
 
-@api_view(['GET', 'PATCH'])
+@api_view(['GET', 'PUT'])
 @login_required(redirect_field_name=None)
 def fileaccess(request):
 
@@ -36,7 +36,7 @@ def fileaccess(request):
             status=status_code
         )
 
-    elif request.method == 'PATCH':
+    elif request.method == 'PUT':
 
         with open(path, mode='w') as f:
             f.truncate()
