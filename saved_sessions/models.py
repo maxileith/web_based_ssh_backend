@@ -10,9 +10,11 @@ class SSHSession(models.Model):
     """
     title = models.CharField(max_length=255)
     hostname = models.CharField(max_length=255)
-    port = models.IntegerField()
-    user = models.OneToOneField(User, on_delete=models.deletion.CASCADE) # TODO: check whether cascade is the best option
+    port = models.IntegerField(null=True)
+    username = models.CharField(max_length=255)
     description = models.CharField(max_length=500)
+    password = models.CharField(max_length=500)
+    user = models.OneToOneField(User, on_delete=models.deletion.CASCADE)
 
     def __str__(self):
         return self.title

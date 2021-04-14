@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from django.http.response import JsonResponse
@@ -9,11 +10,13 @@ from .serializers import SSHSessionSerializer
 import json
 
 
-@api_view(['GET'])
-def all(request):
-    """all [summary]
+@api_view(['GET', 'POST'])
+@login_required
+def sessions(request):
+    """sessions [summary]
 
     - returns all SSH sessions saved for the user on HTTP GET Request
+    - create new SSH session based on HTTP POST Request
 
     Args:
         request (request): request object of the http request
@@ -21,7 +24,7 @@ def all(request):
     Returns:
         JsonResponse: returns JSON object and HTTP status code
     """
-
+    user = request.user
     if request.method == 'GET':
         sessions = SSHSession.objects.all()
 
@@ -41,6 +44,31 @@ def all(request):
             "count": size,
             "sessions": sessions_serializer.data
         }, status=status_code)
+
+    elif request.method == 'POST':
+        json_body = json.loads(request.body)
+        session_serializer = SSHSessionSerializer(data=json_body)
+
+        if session_serializer.is_valid():
+            created_session = session_serializer.create(validated_data=session_serializer.validated_data)
+            created_session.user = request.user
+            created_session.save()
+
+            return JsonResponse(
+                {
+                    'message': 'operation was successful',
+                    'details': session_serializer.data
+                },
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return JsonResponse(
+                {
+                    'message': 'something went wrong',
+                    'details': {}
+                },
+                status=status.HTTP_409_CONFLICT
+            )
 
 
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
@@ -100,6 +128,7 @@ def details(request, id):
                 status=status.HTTP_201_CREATED
             )
         else:
+            print(session_serializer.errors)
             return JsonResponse(
                 {
                     'message': 'something went wrong',
@@ -118,7 +147,7 @@ def details(request, id):
         #     'description': 'explaining text',
         #     'password': 'iaspdgf'
         # }
-        print(request.data)
+        (request.data)
 
             # successfull (return of the saved session)
 
