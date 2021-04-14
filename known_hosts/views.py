@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from django.contrib.auth.decorators import login_required
 from django.http.response import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -7,13 +7,13 @@ import os
 
 
 @api_view(['GET', 'PATCH'])
+@login_required(redirect_field_name=None)
 def fileaccess(request):
 
     WAY_TO_KNOWN_HOSTS = '../ssh/known_hosts/'
 
     working_dir = os.path.dirname(os.path.realpath(__file__))
-    # TODO: Real user id
-    file_name = f'{str(1)}.keys'
+    file_name = f'{request.user.id}.keys'
     path = os.path.join(working_dir, WAY_TO_KNOWN_HOSTS, file_name)
 
     if request.method == 'GET':
