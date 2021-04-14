@@ -14,6 +14,18 @@ class SSHClientController:
     TIMEOUT = 15
 
     def __init__(self, consumer, hostname=None, username=None, password=None, port=22, rsa_path=None):
+        """__init__ [summary]
+
+        Create a controller and give it all the information needed for the connection.
+
+        Args:
+            consumer (SSHConsumer): Consumer to send the output to.
+            hostname (str, optional): Hostname to which the connection is to be established. Defaults to None.
+            username (str, optional): Username used to authenticate to the server. Defaults to None.
+            password (str, optional): Password used to authenticate to the server. Defaults to None.
+            port (int, optional): Port to which the connection is to be established. Defaults to 22.
+            rsa_path (str, optional): Path to the rsa keyfile used to authenticate to the server. Defaults to None.
+        """
         self.consumer = consumer
         self.hostname = hostname
         self.username = username
@@ -24,6 +36,11 @@ class SSHClientController:
         self.running = True
 
     def run(self):
+        """run [summary]
+
+        main programme logic
+
+        """
         self.client = paramiko.SSHClient()
         key_policy = HostKeyChecker(self.__println, self.__prompt)
         self.client.set_missing_host_key_policy(policy=key_policy)
@@ -35,19 +52,55 @@ class SSHClientController:
         self.consumer.close()
 
     def input(self, x):
+        """input [summary]
+
+        Method to send data to the client.
+
+        Args:
+            x (str): String to be passed on to the client.
+        """
         self.input_queue.put(x)
 
     def stop(self):
+        """stop [summary]
+
+        Disconnects from the SSH server and terminates the client.
+
+        """
         self.running = False
 
     def __print(self, txt):
+        """__print [summary]
+
+        Print to consumer.
+
+        Args:
+            txt (str): Text to be printed.
+        """
         self.__send(u(str(txt)))
 
     def __println(self, txt):
+        """__println [summary]
+
+        Analogous to __print, with newline at the end.
+
+        Args:
+            txt (str): Text to be printed.
+        """
         self.__print(txt)
         self.__send(u('\r\n'))
 
-    def __prompt(self, prompt):
+    def __prompt(self, prompt=''):
+        """__prompt [summary]
+
+        Prompts the user to do something.
+
+        Args:
+            prompt (str, optional): Prompt text. Defaults to ''.
+
+        Returns:
+            str: Response from consumer
+        """
         # send text
         self.__print(prompt)
         response_stream = StringIO()
@@ -71,6 +124,13 @@ class SSHClientController:
         return response_text
 
     def __connect(self):
+        """__connect [summary]
+
+        Establish connection and handle errors
+
+        Returns:
+            bool: True on successful connect, False otherwise
+        """
         self.__println("establishing the connection ...")
         try:
             self.client.connect(hostname=self.hostname, username=self.username,
@@ -86,31 +146,37 @@ class SSHClientController:
         return False
 
     def __interactive_shell(self):
+        """__interactive_shell [summary]
+
+        Passes data permanently from consumer to client and vice versa.
+
+        """
         channel = self.client.invoke_shell()
 
-        # output ot client
-        def __ouput():
-            while channel.recv_ready():
-                r = u(channel.recv(1024))
-                if len(r) == 0:
-                    return False
-                self.__send(r)
-            return True
+        def __loop_tasks():
+            while not channel.closed and self.running:
+                sleep(self.INTERVAL)
+                # output ot client
+                while channel.recv_ready():
+                    r = u(channel.recv(1024))
+                    if len(r) == 0:
+                        return
+                    self.__send(r)
 
-        # input from client
-        def __input():
-            while channel.send_ready() and not self.input_queue.empty():
-                channel.send(u(self.input_queue.get()))
+                # input from client
+                while channel.send_ready() and not self.input_queue.empty():
+                    channel.send(u(self.input_queue.get()))
 
-        while not channel.closed and self.running:
-            sleep(self.INTERVAL)
-
-            if not __ouput():
-                break
-
-            __input()
+        __loop_tasks()
 
     def __send(self, x):
+        """__send [summary]
+
+        Sends data to the consumer.
+
+        Args:
+            x (str): data to be send
+        """
         self.consumer.send(text_data=json.dumps({
             'data': x
         }))
@@ -122,6 +188,15 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
         self.__prompt = prompt
 
     def missing_host_key(self, client, hostname, key):
+        """missing_host_key [summary]
+
+        Throws an exception if the key is not accepted
+
+        Args:
+            client (): -
+            hostname (str): hostname of the connection which is to be established
+            key (str): key of the server to which the connection is to be established
+        """
         known_host_keys_path = self.__known_hosts_path()
         # load and return known host keys
         known_host_keys = paramiko.util.load_host_keys(known_host_keys_path)
