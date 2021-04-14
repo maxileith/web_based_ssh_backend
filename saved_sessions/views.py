@@ -10,7 +10,7 @@ import json
 
 
 @api_view(['GET', 'POST'])
-@login_required
+@login_required(redirect_field_name=None)
 def sessions(request):
     """sessions [summary]
 

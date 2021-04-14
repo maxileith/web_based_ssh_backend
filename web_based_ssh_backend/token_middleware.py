@@ -13,13 +13,13 @@ class TokenMiddleware():
 
         try:
             token = request.headers["Token"]
+            user = auth.authenticate(token=token)
         except KeyError:
-            raise PermissionDenied
+            user = None
 
-        user = auth.authenticate(token=token)
 
-        if not user:
-            raise PermissionDenied
+        #if not user:
+        #    raise PermissionDenied
 
         request.user = user
 
