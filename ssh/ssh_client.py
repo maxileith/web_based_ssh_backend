@@ -218,7 +218,7 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
         # get the current working directory
         working_dir = os.path.dirname(os.path.realpath(__file__))
         # name of known hosts file
-        file_name = str(self.__user_id)
+        file_name = f'{str(self.__user_id)}.keys'
         # concat everything
         path = os.path.join(working_dir, 'known_hosts', file_name)
 

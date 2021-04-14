@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate
 from django.http import HttpResponse, JsonResponse
 import json
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -13,6 +14,7 @@ import jwt
 
 @api_view(['POST'])
 def login(request):
+
     if request.method == "POST":
         content = request.data
 
@@ -53,31 +55,4 @@ def register(request):
             serializer = UserSerializer(user)
             return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
 
-    return HttpResponse(status=status.HTTP_409_CONFLICT)
-
-
-@api_view(['GET'])
-def verify(request):
-    if request.method == "GET":
-
-        if request.headers["Token"]:
-            print(request.headers)
-            print(request.headers["Token"])
-            try:
-                jwt.decode(request.headers["Token"],
-                           "ha", algorithms=["HS256"])
-                return JsonResponse(
-                    {
-                        "success": "true"
-                    },
-                    status=status.HTTP_202_ACCEPTED
-                )
-            except:
-                return JsonResponse(
-                    {
-                        "success": "false"
-                    },
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
-
-    return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
+        return HttpResponse(status=status.HTTP_409_CONFLICT)
