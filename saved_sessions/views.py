@@ -95,16 +95,9 @@ def details(request, id):
 
     # load details of a saved session
     if request.method == 'GET':
+        session = SSHSession.objects.filter(pk=id, user=request.user).first()
 
-        try:
-            session = SSHSession.objects.get(pk=id)
-            session_serializer = SSHSessionSerializer(session)
-            return JsonResponse({
-                "message": "operation was successful",
-                "details": session_serializer.data
-            },
-                status=status.HTTP_200_OK)
-        except SSHSession.DoesNotExist:
+        if not session:
             # Session doesn't not exist
             return JsonResponse(
                 {
@@ -114,53 +107,17 @@ def details(request, id):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-    # create a new saved session
-    elif request.method == 'PUT':
-        # deserialize json
-        json_body = json.loads(request.body)
-        session_serializer = SSHSessionSerializer(data=json_body)
-
-        if session_serializer.is_valid():
-            new_instance = session_serializer.create(
-                validated_data=session_serializer.validated_data)
-
-            new_instance_serializer = SSHSessionSerializer(new_instance)
-
-            return JsonResponse(
-                {
-                    'message': 'operation was successful',
-                    'details': new_instance_serializer.data
-                },
-                status=status.HTTP_201_CREATED
-            )
-        else:
-            print(session_serializer.errors)
-            return JsonResponse(
-                {
-                    'message': 'something went wrong',
-                    'details': {}
-                },
-                status=status.HTTP_409_CONFLICT
-            )
-
-        # request body in dictionary
-        # {
-        #     'title': 'Debian Buster Server',
-        #     'hostname': 'example.org',
-        #     'port': 22,
-        #     'username': 'root',
-        #     'description': 'explaining text',
-        #     'password': 'iaspdgf'
-        # }
-        (request.data)
-
-        # successfull (return of the saved session)
+        session_serializer = SSHSessionSerializer(session)
+        return JsonResponse({
+            "message": "operation was successful",
+            "details": session_serializer.data
+        }, status=status.HTTP_200_OK)
 
     # update a saved session
     elif request.method == 'PATCH':
-        try:
-            selected_session = SSHSession.objects.get(pk=id)
-        except SSHSession.DoesNotExist:
+        selected_session = SSHSession.objects.filter(pk=id, user=request.user).first()
+
+        if not selected_session:
             # Session doesn't not exist
             return JsonResponse(
                 {
@@ -169,11 +126,11 @@ def details(request, id):
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
+
         json_body = json.loads(request.body)
         session_serializer = SSHSessionSerializer(data=json_body)
 
         if session_serializer.is_valid():
-            print(session_serializer.validated_data)
             updated_session_object = session_serializer.update(selected_session,
                                                                validated_data=session_serializer.validated_data)
 
@@ -189,7 +146,6 @@ def details(request, id):
                 },
                 status=status.HTTP_200_OK)
         else:
-            print(session_serializer.errors)
             return JsonResponse(
                 {
                     'message': 'something went wrong',
@@ -200,10 +156,10 @@ def details(request, id):
 
     # delete a saved session
     elif request.method == 'DELETE':
-        try:
-            selected_session = SSHSession.objects.get(pk=id)
-        except SSHSession.DoesNotExist:
-            # Session doesn't not exist
+        selected_session = SSHSession.objects.filter(pk=id, user=request.user).first()
+
+        # Session doesn't not exist
+        if not selected_session:
             return JsonResponse(
                 {
                     'message': 'session does not exist',
