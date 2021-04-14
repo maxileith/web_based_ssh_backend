@@ -1,5 +1,5 @@
 .vscode/
-known_hosts
+known_hosts/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
