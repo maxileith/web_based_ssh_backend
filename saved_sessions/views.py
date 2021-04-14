@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from django.http.response import JsonResponse
+from django.http.response import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from .models import SSHSession

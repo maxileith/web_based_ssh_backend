@@ -53,7 +53,7 @@ def register(request):
             serializer = UserSerializer(user)
             return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
 
-    return HttpResponse(status=status.HTTP_409_CONFLICT)
+        return HttpResponse(status=status.HTTP_409_CONFLICT)
 
 
 @api_view(['GET'])
@@ -80,4 +80,4 @@ def verify(request):
                     status=status.HTTP_401_UNAUTHORIZED
                 )
 
-    return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
+        return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
