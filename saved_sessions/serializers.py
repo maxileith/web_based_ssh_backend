@@ -9,7 +9,8 @@ class SSHSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SSHSession
-        fields = ('title', 'hostname', 'port', 'username', 'description', 'password')
+        fields = ('title', 'hostname', 'port',
+                  'username', 'description', 'password')
 
     # there should probably be also a partial update method
     def update(self, instance, validated_data):
@@ -25,7 +26,7 @@ class SSHSessionSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print(validated_data)
-        instance = SSHSession.objects.create()
+        instance = SSHSession.objects.create(user=self.context['user'])
         instance.title = validated_data.pop('title')
         instance.password = validated_data.pop('password')
         instance.username = validated_data.pop('username')

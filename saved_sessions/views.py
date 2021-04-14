@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-
+from django.views.decorators.csrf import csrf_exempt
 from django.http.response import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -11,6 +11,7 @@ import json
 
 @api_view(['GET', 'POST'])
 @login_required(redirect_field_name=None)
+@csrf_exempt
 def sessions(request):
     """sessions [summary]
 
@@ -23,9 +24,8 @@ def sessions(request):
     Returns:
         JsonResponse: returns JSON object and HTTP status code
     """
-    user = request.user
     if request.method == 'GET':
-        sessions = SSHSession.objects.all()
+        sessions = SSHSession.objects.filter(user=request.user)
 
         size = len(sessions)
 
@@ -45,13 +45,20 @@ def sessions(request):
         }, status=status_code)
 
     elif request.method == 'POST':
-        json_body = json.loads(request.body)
-        session_serializer = SSHSessionSerializer(data=json_body)
+        try:
+            body = json.loads(request.body)
+        except json.JSONDecodeError:
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        print(body)
+
+        session_serializer = SSHSessionSerializer(
+            data=body, context={'user': request.user})
+
+        print(session_serializer.error_messages)
 
         if session_serializer.is_valid():
-            created_session = session_serializer.create(validated_data=session_serializer.validated_data)
-            created_session.user = request.user
-            created_session.save()
+            session_serializer.save()
 
             return JsonResponse(
                 {
@@ -70,12 +77,11 @@ def sessions(request):
             )
 
 
-@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@api_view(['GET', 'PATCH', 'DELETE'])
 def details(request, id):
     """details [summary]
 
     - returns a specific SSH sessions on HTTP GET Request
-    - creates a SSH session on HTTP PUT Request
     - updates a SSH session on HTTP PATCH Request
     - deletes a SSG session on HTTP DELETE Request
 
