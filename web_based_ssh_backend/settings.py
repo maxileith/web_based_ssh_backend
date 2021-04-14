@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'saved_sessions.apps.SavedSessionsConfig',
     'ssh.apps.SshConfig',
+    'known_hosts.apps.KnownHostsConfig',
     'rest_framework',
     'channels',
     'corsheaders',

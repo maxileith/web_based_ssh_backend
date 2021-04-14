@@ -1,7 +1,6 @@
 from django.shortcuts import render
 
 from django.http.response import JsonResponse
-from rest_framework.parsers import JSONParser
 from rest_framework import status
 from rest_framework.decorators import api_view
 from .models import SSHSession
@@ -88,7 +87,8 @@ def details(request, id):
         session_serializer = SSHSessionSerializer(data=json_body)
 
         if session_serializer.is_valid():
-            new_instance = session_serializer.create(validated_data=session_serializer.validated_data)
+            new_instance = session_serializer.create(
+                validated_data=session_serializer.validated_data)
 
             new_instance_serializer = SSHSessionSerializer(new_instance)
 
@@ -108,7 +108,6 @@ def details(request, id):
                 status=status.HTTP_409_CONFLICT
             )
 
-
         # request body in dictionary
         # {
         #     'title': 'Debian Buster Server',
@@ -120,7 +119,7 @@ def details(request, id):
         # }
         print(request.data)
 
-            # successfull (return of the saved session)
+        # successfull (return of the saved session)
 
     # update a saved session
     elif request.method == 'PATCH':
