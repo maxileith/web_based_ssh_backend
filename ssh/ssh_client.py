@@ -13,13 +13,14 @@ class SSHClientController:
     INTERVAL = 1.0/FPS
     TIMEOUT = 15
 
-    def __init__(self, consumer, hostname=None, username=None, password=None, port=22, rsa_path=None):
+    def __init__(self, consumer, user_id: int, hostname: str = None, username: str = None, password: str = None, port:  int = 22, rsa_path: str = None):
         """__init__ [summary]
 
         Create a controller and give it all the information needed for the connection.
 
         Args:
             consumer (SSHConsumer): Consumer to send the output to.
+            user_id (int): ID of the user that tries want to connect.
             hostname (str, optional): Hostname to which the connection is to be established. Defaults to None.
             username (str, optional): Username used to authenticate to the server. Defaults to None.
             password (str, optional): Password used to authenticate to the server. Defaults to None.
@@ -27,6 +28,7 @@ class SSHClientController:
             rsa_path (str, optional): Path to the rsa keyfile used to authenticate to the server. Defaults to None.
         """
         self.consumer = consumer
+        self.user_id = user_id
         self.hostname = hostname
         self.username = username
         self.password = password
@@ -42,7 +44,8 @@ class SSHClientController:
 
         """
         self.client = paramiko.SSHClient()
-        key_policy = HostKeyChecker(self.__println, self.__prompt)
+        key_policy = HostKeyChecker(
+            self.__println, self.__prompt, self.user_id)
         self.client.set_missing_host_key_policy(policy=key_policy)
         if not self.__connect():
             self.consumer.close()
@@ -51,7 +54,7 @@ class SSHClientController:
         self.client.close()
         self.consumer.close()
 
-    def input(self, x):
+    def input(self, x: str):
         """input [summary]
 
         Method to send data to the client.
@@ -69,7 +72,7 @@ class SSHClientController:
         """
         self.running = False
 
-    def __print(self, txt):
+    def __print(self, txt: str):
         """__print [summary]
 
         Print to consumer.
@@ -79,7 +82,7 @@ class SSHClientController:
         """
         self.__send(u(str(txt)))
 
-    def __println(self, txt):
+    def __println(self, txt: str):
         """__println [summary]
 
         Analogous to __print, with newline at the end.
@@ -90,7 +93,7 @@ class SSHClientController:
         self.__print(txt)
         self.__send(u('\r\n'))
 
-    def __prompt(self, prompt=''):
+    def __prompt(self, prompt: str = ''):
         """__prompt [summary]
 
         Prompts the user to do something.
@@ -169,7 +172,7 @@ class SSHClientController:
 
         __loop_tasks()
 
-    def __send(self, x):
+    def __send(self, x: str):
         """__send [summary]
 
         Sends data to the consumer.
@@ -183,9 +186,10 @@ class SSHClientController:
 
 
 class HostKeyChecker(paramiko.MissingHostKeyPolicy):
-    def __init__(self, println, prompt):
+    def __init__(self, println, prompt, user_id):
         self.__println = println
         self.__prompt = prompt
+        self.__user_id = user_id
 
     def missing_host_key(self, client, hostname, key):
         """missing_host_key [summary]
@@ -214,8 +218,18 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
         # get the current working directory
         working_dir = os.path.dirname(os.path.realpath(__file__))
         # name of known hosts file
-        file_name = "known_hosts"
-        return os.path.join(working_dir, file_name)
+        file_name = f'{str(self.__user_id)}.keys'
+        # concat everything
+        path = os.path.join(working_dir, 'known_hosts', file_name)
+
+        try:
+            f = open(path, 'x')
+            f.close()
+            self.__println('*** INFO: created a new known hosts file')
+        except FileExistsError:
+            pass
+
+        return path
 
     def __identify_case(self, hostname, known_host_keys, key):
         if hostname not in known_host_keys or key.get_name() not in known_host_keys[hostname]:
@@ -229,7 +243,7 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
 
     def __handle_unknown(self, hostname, known_host_keys, key, known_host_keys_path):
         self.__println(
-            f'*** Warning: Unknown host key: {key.get_base64()}')
+            f'*** WARNING: Unknown host key: {key.get_base64()}')
         add = self.__prompt(
             "Add the host key to known hosts? (y/N): ")
 
@@ -244,7 +258,7 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
         raise HostKeyError
 
     def __handle_changed(self, hostname, known_host_keys, key, known_host_keys_path):
-        self.__println('*** Warning: Host key has changed!')
+        self.__println('*** WARNING: Host key has changed!')
         self.__println(
             f'*** Old Key: {known_host_keys[hostname][key.get_name()].get_base64()}')
         self.__println(f'*** New Key: {key.get_base64()}')
