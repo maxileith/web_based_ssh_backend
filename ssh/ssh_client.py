@@ -13,8 +13,22 @@ class SSHClientController:
     INTERVAL = 1.0/FPS
     TIMEOUT = 15
 
-    def __init__(self, consumer, hostname=None, username=None, password=None, port=22, rsa_path=None):
+    def __init__(self, consumer, user_id: int, hostname: str = None, username: str = None, password: str = None, port:  int = 22, rsa_path: str = None):
+        """__init__ [summary]
+
+        Create a controller and give it all the information needed for the connection.
+
+        Args:
+            consumer (SSHConsumer): Consumer to send the output to.
+            user_id (int): ID of the user that tries want to connect.
+            hostname (str, optional): Hostname to which the connection is to be established. Defaults to None.
+            username (str, optional): Username used to authenticate to the server. Defaults to None.
+            password (str, optional): Password used to authenticate to the server. Defaults to None.
+            port (int, optional): Port to which the connection is to be established. Defaults to 22.
+            rsa_path (str, optional): Path to the rsa keyfile used to authenticate to the server. Defaults to None.
+        """
         self.consumer = consumer
+        self.user_id = user_id
         self.hostname = hostname
         self.username = username
         self.password = password
@@ -24,8 +38,14 @@ class SSHClientController:
         self.running = True
 
     def run(self):
+        """run [summary]
+
+        main programme logic
+
+        """
         self.client = paramiko.SSHClient()
-        key_policy = HostKeyChecker(self.__println, self.__prompt)
+        key_policy = HostKeyChecker(
+            self.__println, self.__prompt, self.user_id)
         self.client.set_missing_host_key_policy(policy=key_policy)
         if not self.__connect():
             self.consumer.close()
@@ -34,20 +54,56 @@ class SSHClientController:
         self.client.close()
         self.consumer.close()
 
-    def input(self, x):
+    def input(self, x: str):
+        """input [summary]
+
+        Method to send data to the client.
+
+        Args:
+            x (str): String to be passed on to the client.
+        """
         self.input_queue.put(x)
 
     def stop(self):
+        """stop [summary]
+
+        Disconnects from the SSH server and terminates the client.
+
+        """
         self.running = False
 
-    def __print(self, txt):
+    def __print(self, txt: str):
+        """__print [summary]
+
+        Print to consumer.
+
+        Args:
+            txt (str): Text to be printed.
+        """
         self.__send(u(str(txt)))
 
-    def __println(self, txt):
+    def __println(self, txt: str):
+        """__println [summary]
+
+        Analogous to __print, with newline at the end.
+
+        Args:
+            txt (str): Text to be printed.
+        """
         self.__print(txt)
         self.__send(u('\r\n'))
 
-    def __prompt(self, prompt):
+    def __prompt(self, prompt: str = ''):
+        """__prompt [summary]
+
+        Prompts the user to do something.
+
+        Args:
+            prompt (str, optional): Prompt text. Defaults to ''.
+
+        Returns:
+            str: Response from consumer
+        """
         # send text
         self.__print(prompt)
         response_stream = StringIO()
@@ -71,6 +127,13 @@ class SSHClientController:
         return response_text
 
     def __connect(self):
+        """__connect [summary]
+
+        Establish connection and handle errors
+
+        Returns:
+            bool: True on successful connect, False otherwise
+        """
         self.__println("establishing the connection ...")
         try:
             self.client.connect(hostname=self.hostname, username=self.username,
@@ -86,42 +149,58 @@ class SSHClientController:
         return False
 
     def __interactive_shell(self):
+        """__interactive_shell [summary]
+
+        Passes data permanently from consumer to client and vice versa.
+
+        """
         channel = self.client.invoke_shell()
 
-        # output ot client
-        def __ouput():
-            while channel.recv_ready():
-                r = u(channel.recv(1024))
-                if len(r) == 0:
-                    return False
-                self.__send(r)
-            return True
+        def __loop_tasks():
+            while not channel.closed and self.running:
+                sleep(self.INTERVAL)
+                # output ot client
+                while channel.recv_ready():
+                    r = u(channel.recv(1024))
+                    if len(r) == 0:
+                        return
+                    self.__send(r)
 
-        # input from client
-        def __input():
-            while channel.send_ready() and not self.input_queue.empty():
-                channel.send(u(self.input_queue.get()))
+                # input from client
+                while channel.send_ready() and not self.input_queue.empty():
+                    channel.send(u(self.input_queue.get()))
 
-        while not channel.closed and self.running:
-            sleep(self.INTERVAL)
+        __loop_tasks()
 
-            if not __ouput():
-                break
+    def __send(self, x: str):
+        """__send [summary]
 
-            __input()
+        Sends data to the consumer.
 
-    def __send(self, x):
+        Args:
+            x (str): data to be send
+        """
         self.consumer.send(text_data=json.dumps({
             'data': x
         }))
 
 
 class HostKeyChecker(paramiko.MissingHostKeyPolicy):
-    def __init__(self, println, prompt):
+    def __init__(self, println, prompt, user_id):
         self.__println = println
         self.__prompt = prompt
+        self.__user_id = user_id
 
     def missing_host_key(self, client, hostname, key):
+        """missing_host_key [summary]
+
+        Throws an exception if the key is not accepted
+
+        Args:
+            client (): -
+            hostname (str): hostname of the connection which is to be established
+            key (str): key of the server to which the connection is to be established
+        """
         known_host_keys_path = self.__known_hosts_path()
         # load and return known host keys
         known_host_keys = paramiko.util.load_host_keys(known_host_keys_path)
@@ -139,8 +218,18 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
         # get the current working directory
         working_dir = os.path.dirname(os.path.realpath(__file__))
         # name of known hosts file
-        file_name = "known_hosts"
-        return os.path.join(working_dir, file_name)
+        file_name = f'{str(self.__user_id)}.keys'
+        # concat everything
+        path = os.path.join(working_dir, 'known_hosts', file_name)
+
+        try:
+            f = open(path, 'x')
+            f.close()
+            self.__println('*** INFO: created a new known hosts file')
+        except FileExistsError:
+            pass
+
+        return path
 
     def __identify_case(self, hostname, known_host_keys, key):
         if hostname not in known_host_keys or key.get_name() not in known_host_keys[hostname]:
@@ -154,7 +243,7 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
 
     def __handle_unknown(self, hostname, known_host_keys, key, known_host_keys_path):
         self.__println(
-            f'*** Warning: Unknown host key: {key.get_base64()}')
+            f'*** WARNING: Unknown host key: {key.get_base64()}')
         add = self.__prompt(
             "Add the host key to known hosts? (y/N): ")
 
@@ -169,7 +258,7 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
         raise HostKeyError
 
     def __handle_changed(self, hostname, known_host_keys, key, known_host_keys_path):
-        self.__println('*** Warning: Host key has changed!')
+        self.__println('*** WARNING: Host key has changed!')
         self.__println(
             f'*** Old Key: {known_host_keys[hostname][key.get_name()].get_base64()}')
         self.__println(f'*** New Key: {key.get_base64()}')
