@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view
 # Create your views here.
 from auth.serializers import UserSerializer
 import jwt
+import datetime
 
 
 @api_view(['POST'])
@@ -28,12 +29,10 @@ def login(request):
             #  {expiresIn: "4hr"}
             token = jwt.encode(payload, "ha", algorithm="HS256",
                                headers={"expiresIn": "4hr"})
-            return JsonResponse(
-                {
-                    "token": token
-                },
-                status=status.HTTP_202_ACCEPTED
-            )
+            response = HttpResponse(status=status.HTTP_202_ACCEPTED)
+            response.set_cookie(key='token', value=token,
+                                max_age=86400)
+            return response
         else:
             return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -56,3 +55,15 @@ def register(request):
             return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
 
         return HttpResponse(status=status.HTTP_409_CONFLICT)
+
+
+@api_view(['GET'])
+@login_required(redirect_field_name=None)
+def verify(request):
+    if request.method == 'GET':
+        return JsonResponse(
+            {
+                'success': True
+            },
+            status=status.HTTP_200_OK
+        )

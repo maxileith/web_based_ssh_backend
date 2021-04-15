@@ -19,7 +19,7 @@ def sessions(request):
     - create new SSH session based on HTTP POST Request
 
     Args:
-        request (request): request object of the http request
+        request (Request): request object of the http request
 
     Returns:
         JsonResponse: returns JSON object and HTTP status code
@@ -115,7 +115,8 @@ def details(request, id):
 
     # update a saved session
     elif request.method == 'PATCH':
-        selected_session = SSHSession.objects.filter(pk=id, user=request.user).first()
+        selected_session = SSHSession.objects.filter(
+            pk=id, user=request.user).first()
 
         if not selected_session:
             # Session doesn't not exist
@@ -156,7 +157,8 @@ def details(request, id):
 
     # delete a saved session
     elif request.method == 'DELETE':
-        selected_session = SSHSession.objects.filter(pk=id, user=request.user).first()
+        selected_session = SSHSession.objects.filter(
+            pk=id, user=request.user).first()
 
         # Session doesn't not exist
         if not selected_session:

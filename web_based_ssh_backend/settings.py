@@ -46,9 +46,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'web_based_ssh_backend.middle.DisableCSRFMiddleware',
@@ -136,7 +136,8 @@ STATIC_URL = '/static/'
 ASGI_APPLICATION = "web_based_ssh_backend.asgi.application"
 
 CORS_ORIGIN_ALLOW_ALL = False
-CORS_ALLOWED_ORIGINS = [
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = [
     # behind reverse proxy anyway
     # "https://webssh.leith.de",
     "http://localhost:3000",
@@ -154,4 +155,5 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'Access-Control-Allow-Credentials'
 ]

@@ -1,7 +1,7 @@
-from django.urls import re_path
+from django.urls import path
 
 from .consumers import SSHConsumer
 
 websocket_urlpatterns = [
-    re_path(r'ws/ssh/$', SSHConsumer.as_asgi()),
+    path(r'ws/ssh/<int:ssh_session_id>', SSHConsumer.as_asgi()),
 ]

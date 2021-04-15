@@ -12,6 +12,7 @@ import os
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
+from .middle import WSTokenMiddleware
 
 import ssh.routing
 
@@ -21,8 +22,10 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE',
 application = ProtocolTypeRouter({
     'http': get_asgi_application(),
     'websocket': AuthMiddlewareStack(
+        #        WSTokenMiddleware(
         URLRouter(
             ssh.routing.websocket_urlpatterns,
         )
+        #        )
     )
 })

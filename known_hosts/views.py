@@ -9,6 +9,18 @@ import os
 @api_view(['GET', 'PUT'])
 @login_required(redirect_field_name=None)
 def fileaccess(request):
+    """fileaccess [summary]
+
+    - returns the known hosts file associated with the user on HTTP GET request.
+    - overwrites the known hists file associated with the user on HTTP PUT request.
+    - if the known hosts file does not exist, a new one is created.
+
+    Args:
+        request (Request): request object of the http request
+
+    Returns:
+        JsonResponse: returns JSON object and HTTP status code
+    """
 
     WAY_TO_KNOWN_HOSTS = '../ssh/known_hosts/'
 
