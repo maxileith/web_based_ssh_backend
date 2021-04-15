@@ -1,5 +1,6 @@
 from django.core.exceptions import PermissionDenied
 from django.contrib import auth
+from channels.db import database_sync_to_async
 
 
 class TokenMiddleware:
@@ -34,15 +35,19 @@ class TokenMiddleware:
         return self.get_response(request)
 
 
+@database_sync_to_async
+def authenticate(token):
+    return auth.authenticate(token=token)
+
+
 class WSTokenMiddleware:
     def __init__(self, app):
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        print(scope['headers'])
         try:
-            token = scope["query_string"]
-            user = auth.authenticate(token=token)
+            token = scope['cookies']['token']
+            user = await authenticate(token=token)
         except KeyError:
             user = None
 

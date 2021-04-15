@@ -12,7 +12,7 @@ class SSHConsumer(WebsocketConsumer):
     def connect(self):
         self.ssh_session_id = self.scope['url_route']['kwargs']['ssh_session_id']
 
-        print(self.scope["user"])
+        print(self.scope["user"].id)
 
         self.ssh_client = SSHClientController(
             self, user_id=self.ssh_session_id, hostname="10.0.0.3", username="root", password="")

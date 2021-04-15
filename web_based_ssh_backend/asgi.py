@@ -22,10 +22,10 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE',
 application = ProtocolTypeRouter({
     'http': get_asgi_application(),
     'websocket': AuthMiddlewareStack(
-        #        WSTokenMiddleware(
-        URLRouter(
-            ssh.routing.websocket_urlpatterns,
+        WSTokenMiddleware(
+            URLRouter(
+                ssh.routing.websocket_urlpatterns,
+            )
         )
-        #        )
     )
 })
