@@ -9,7 +9,7 @@ class SSHSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SSHSession
-        fields = ('title', 'hostname', 'port',
+        fields = ('id', 'title', 'hostname', 'port',
                   'username', 'description', 'password')
 
     # there should probably be also a partial update method
