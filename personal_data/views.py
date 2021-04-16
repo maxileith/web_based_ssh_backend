@@ -22,7 +22,14 @@ def details(request):
     if request.method == 'PATCH':
         user: User = request.user
 
-        if 'password' in request.data.keys():
+        if 'password' in request.data.keys() and 'old_password' in request.data.keys():
+            if not user.check_password(request.data['old_password']):
+                return JsonResponse(
+                    {
+                        'message': 'The old password is incorrect.'
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
             try:
                 validator.validate_password(
                     password=request.data['password'], user=user)
@@ -34,6 +41,15 @@ def details(request):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             user.set_password(request.data['password'])
+            request.data.pop('password')
+            request.data.pop('old_password')
+        elif 'password' in request.data.keys() or 'old_password' in request.data.keys():
+            return JsonResponse(
+                {
+                    'message': 'To change the password, you need to provide both the old and the new password.'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         if 'email' in request.data.keys():
             pattern = re.compile(
@@ -46,6 +62,7 @@ def details(request):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             user.email = request.data['email']
+            request.data.pop('email')
 
         if 'last_name' in request.data.keys():
             if request.data['last_name'] == '':
@@ -56,6 +73,7 @@ def details(request):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             user.last_name = request.data['last_name']
+            request.data.pop('last_name')
 
         if 'first_name' in request.data.keys():
             if request.data['first_name'] == '':
@@ -66,6 +84,15 @@ def details(request):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             user.first_name = request.data['first_name']
+            request.data.pop('first_name')
+
+        if len(request.data.keys()):
+            return JsonResponse(
+                {
+                    'message': 'Unknown attributes.'
+                },
+                status=status.HTTP_409_CONFLICT
+            )
 
         user.save()
 
