@@ -31,7 +31,7 @@ def login(request):
                                headers={"expiresIn": "4hr"})
             response = HttpResponse(status=status.HTTP_202_ACCEPTED)
             response.set_cookie(key='token', value=token,
-                                max_age=86400)
+                                max_age=86400, samesite='strict')
             return response
         else:
             return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
