@@ -7,4 +7,5 @@ urlpatterns = [
     path('auth/', include('auth.urls')),
     path('saved_sessions/', include('saved_sessions.urls')),
     path('known_hosts/', include('known_hosts.urls')),
+    path('personal_data/', include('personal_data.urls'))
 ]
