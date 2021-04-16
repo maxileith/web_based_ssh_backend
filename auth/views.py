@@ -25,7 +25,7 @@ def login(request):
             username=content['username'], password=content['password'])
 
         if user is not None:
-            expires = datetime.utcnow() + timedelta(minutes=1)
+            expires = datetime.utcnow() + timedelta(minutes=120)
             payload = {
                 "username": content['username'],
                 "exp": expires,
