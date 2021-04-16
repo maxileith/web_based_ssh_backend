@@ -31,10 +31,10 @@ def sessions(request):
 
         if size == 0:
             status_code = status.HTTP_404_NOT_FOUND
-            message = 'no sessions are saved'
+            message = 'No sessions are saved.'
         else:
             status_code = status.HTTP_200_OK
-            message = 'operation was successful'
+            message = 'Operation was successful.'
 
         sessions_serializer = RedactedSSHSessionSerializer(sessions, many=True)
 
@@ -60,7 +60,7 @@ def sessions(request):
 
             return JsonResponse(
                 {
-                    'message': 'operation was successful',
+                    'message': 'Operation was successful',
                     'details': result_serializer.data
                 },
                 status=status.HTTP_201_CREATED
@@ -68,7 +68,7 @@ def sessions(request):
         else:
             return JsonResponse(
                 {
-                    'message': 'something went wrong',
+                    'message': 'Something went wrong.',
                     'details': {}
                 },
                 status=status.HTTP_409_CONFLICT
@@ -99,7 +99,7 @@ def details(request, id):
             # Session doesn't not exist
             return JsonResponse(
                 {
-                    'message': 'session does not exist',
+                    'message': 'Session does not exist.',
                     'details': {}
                 },
                 status=status.HTTP_404_NOT_FOUND
@@ -108,7 +108,7 @@ def details(request, id):
         session_serializer = RedactedSSHSessionSerializer(session)
 
         return JsonResponse({
-            "message": "operation was successful",
+            "message": "Operation was successful.",
             "details": session_serializer.data
         }, status=status.HTTP_200_OK)
 
@@ -121,7 +121,7 @@ def details(request, id):
             # Session doesn't not exist
             return JsonResponse(
                 {
-                    'message': 'specified session does not exist',
+                    'message': 'Specified session does not exist.',
                     'details': {}
                 },
                 status=status.HTTP_404_NOT_FOUND
@@ -132,7 +132,7 @@ def details(request, id):
         except json.JSONDecodeError:
             return JsonResponse(
                 {
-                    'message': 'something went wrong',
+                    'message': 'Something went wrong.',
                     'details': {}
                 },
                 status=status.HTTP_400_BAD_REQUEST
@@ -144,18 +144,19 @@ def details(request, id):
             updated_session_object = session_serializer.update(selected_session,
                                                                validated_data=session_serializer.validated_data)
 
-            result_serializer = RedactedSSHSessionSerializer(updated_session_object)
+            result_serializer = RedactedSSHSessionSerializer(
+                updated_session_object)
 
             return JsonResponse(
                 {
-                    "message": "operation was successful",
+                    "message": "Operation was successful.",
                     'details': result_serializer.data
                 },
                 status=status.HTTP_200_OK)
         else:
             return JsonResponse(
                 {
-                    'message': 'something went wrong',
+                    'message': 'Something went wrong.',
                     'details': {}
                 },
                 status=status.HTTP_409_CONFLICT
@@ -170,7 +171,7 @@ def details(request, id):
         if not selected_session:
             return JsonResponse(
                 {
-                    'message': 'session does not exist',
+                    'message': 'Session does not exist.',
                     'details': {}
                 },
                 status=status.HTTP_404_NOT_FOUND)
@@ -181,13 +182,13 @@ def details(request, id):
         if amount == 1:
             return JsonResponse(
                 {
-                    'message': 'deletion successful'
+                    'message': 'Deletion successful.'
                 },
                 status=status.HTTP_200_OK)
         else:
             return JsonResponse(
                 {
-                    'message': 'deletion failed'
+                    'message': 'Deletion failed.'
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
