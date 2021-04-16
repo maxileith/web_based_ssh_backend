@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, logout
 from django.http import HttpResponse, JsonResponse
 import json
 from django.contrib.auth.models import User
@@ -25,7 +25,7 @@ def login(request):
             username=content['username'], password=content['password'])
 
         if user is not None:
-            expires = datetime.utcnow() + timedelta(minutes=1)
+            expires = datetime.utcnow() + timedelta(minutes=120)
             payload = {
                 "username": content['username'],
                 "exp": expires,
@@ -39,6 +39,15 @@ def login(request):
             )
         else:
             return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+@login_required
+def logout_view(request):
+    if request.method == "POST":
+        logout(request)
+        return HttpResponse(status=204)
+    return HttpResponse(status=405)
 
 
 @api_view(['POST'])

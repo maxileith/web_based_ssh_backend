@@ -5,7 +5,7 @@ from django.http.response import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from .models import SSHSession
-from .serializers import SSHSessionSerializer
+from .serializers import SSHSessionSerializer, RedactedSSHSessionSerializer
 import json
 
 
@@ -36,7 +36,7 @@ def sessions(request):
             status_code = status.HTTP_200_OK
             message = 'operation was successful'
 
-        sessions_serializer = SSHSessionSerializer(sessions, many=True)
+        sessions_serializer = RedactedSSHSessionSerializer(sessions, many=True)
 
         return JsonResponse({
             "message": message,
@@ -50,20 +50,18 @@ def sessions(request):
         except json.JSONDecodeError:
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-        print(body)
-
         session_serializer = SSHSessionSerializer(
             data=body, context={'user': request.user})
 
-        print(session_serializer.error_messages)
-
         if session_serializer.is_valid():
-            session_serializer.save()
+            saved_session = session_serializer.save()
+
+            result_serializer = RedactedSSHSessionSerializer(saved_session)
 
             return JsonResponse(
                 {
                     'message': 'operation was successful',
-                    'details': session_serializer.data
+                    'details': result_serializer.data
                 },
                 status=status.HTTP_201_CREATED
             )
@@ -107,7 +105,8 @@ def details(request, id):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        session_serializer = SSHSessionSerializer(session)
+        session_serializer = RedactedSSHSessionSerializer(session)
+
         return JsonResponse({
             "message": "operation was successful",
             "details": session_serializer.data
@@ -128,18 +127,25 @@ def details(request, id):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        json_body = json.loads(request.body)
-        session_serializer = SSHSessionSerializer(data=json_body)
+        try:
+            json_body = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse(
+                {
+                    'message': 'something went wrong',
+                    'details': {}
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        session_serializer = SSHSessionSerializer(data=json_body, partial=True)
 
         if session_serializer.is_valid():
             updated_session_object = session_serializer.update(selected_session,
                                                                validated_data=session_serializer.validated_data)
 
-            # TODO: check whether it is necessary to create a new serializer
-            result_serializer = SSHSessionSerializer(updated_session_object)
-            # need to add partial
-            # successfull (return of the saved session)
-            # the password should probably removed from the response
+            result_serializer = RedactedSSHSessionSerializer(updated_session_object)
+
             return JsonResponse(
                 {
                     "message": "operation was successful",
