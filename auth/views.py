@@ -12,6 +12,8 @@ from auth.serializers import UserSerializer
 import jwt
 import datetime
 
+from web_based_ssh_backend import settings
+
 
 @api_view(['POST'])
 def login(request):
@@ -23,12 +25,12 @@ def login(request):
             username=content['username'], password=content['password'])
 
         if user is not None:
+            expires = datetime.utcnow() + datetime.timedelta(minutes=30)
             payload = {
                 "username": content['username'],
+                "exp": expires,
             }
-            #  {expiresIn: "4hr"}
-            token = jwt.encode(payload, "ha", algorithm="HS256",
-                               headers={"expiresIn": "4hr"})
+            token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
             response = HttpResponse(status=status.HTTP_202_ACCEPTED)
             response.set_cookie(key='token', value=token,
                                 max_age=86400, samesite='strict')
