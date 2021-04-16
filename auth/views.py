@@ -10,7 +10,9 @@ from rest_framework.decorators import api_view
 # Create your views here.
 from auth.serializers import UserSerializer
 import jwt
-import datetime
+from datetime import datetime, timedelta
+
+from web_based_ssh_backend import settings
 
 
 @api_view(['POST'])
@@ -23,16 +25,18 @@ def login(request):
             username=content['username'], password=content['password'])
 
         if user is not None:
+            expires = datetime.utcnow() + timedelta(minutes=1)
             payload = {
                 "username": content['username'],
+                "exp": expires,
             }
-            #  {expiresIn: "4hr"}
-            token = jwt.encode(payload, "ha", algorithm="HS256",
-                               headers={"expiresIn": "4hr"})
-            response = HttpResponse(status=status.HTTP_202_ACCEPTED)
-            response.set_cookie(key='token', value=token,
-                                max_age=86400, samesite='strict')
-            return response
+            token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+            return JsonResponse(
+                {
+                    'token': token
+                },
+                status=status.HTTP_202_ACCEPTED
+            )
         else:
             return HttpResponse(status=status.HTTP_401_UNAUTHORIZED)
 
