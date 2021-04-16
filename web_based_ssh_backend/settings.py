@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'saved_sessions.apps.SavedSessionsConfig',
     'ssh.apps.SshConfig',
     'known_hosts.apps.KnownHostsConfig',
+    'personal_data.apps.PersonalDataConfig',
     'rest_framework',
     'channels',
     'corsheaders',
