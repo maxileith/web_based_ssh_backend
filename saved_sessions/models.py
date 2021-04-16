@@ -12,7 +12,7 @@ class SSHSession(models.Model):
     hostname = models.CharField(max_length=255)
     port = models.IntegerField(null=True)
     username = models.CharField(max_length=255)
-    description = models.CharField(max_length=500)
+    description = models.CharField(max_length=500, blank=True)
     password = models.CharField(max_length=500)
     user = models.ForeignKey(User, on_delete=models.deletion.CASCADE)
 
