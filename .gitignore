@@ -1,5 +1,5 @@
 .vscode/
-ssh/known_hosts/*
+ssh/known_hosts/*.keys
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
