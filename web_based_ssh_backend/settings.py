@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'ssh.apps.SshConfig',
     'known_hosts.apps.KnownHostsConfig',
     'personal_data.apps.PersonalDataConfig',
+    'app_auth',
     'rest_framework',
     'channels',
     'corsheaders',
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'web_based_ssh_backend.middle.DisableCSRFMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'web_based_ssh_backend.middle.PreventAuthenticationAfterLogout',
     'web_based_ssh_backend.middle.TokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -158,3 +160,5 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
     'Access-Control-Allow-Credentials'
 ]
+
+SSH_KEY_DIRECTORY = os.path.join(BASE_DIR, 'ssh_keys')

@@ -1,7 +1,5 @@
-from auth.serializers import UserSerializer
 from .models import SSHSession
 from rest_framework import serializers
-from django.contrib.auth.models import User
 
 
 class SSHSessionSerializer(serializers.ModelSerializer):

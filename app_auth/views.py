@@ -8,11 +8,12 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 # Create your views here.
-from auth.serializers import UserSerializer
+from app_auth.serializers import UserSerializer
 import jwt
 from datetime import datetime, timedelta
 
 from web_based_ssh_backend import settings
+from .models import Token
 
 
 @api_view(['POST'])
@@ -31,6 +32,10 @@ def login(request):
                 "exp": expires,
             }
             token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+            token_object = Token.objects.create(user=user, token=token)
+            token_object.save()
+
             return JsonResponse(
                 {
                     'token': token
