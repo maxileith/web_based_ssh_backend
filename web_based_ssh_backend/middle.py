@@ -2,6 +2,7 @@ from django.core.exceptions import PermissionDenied
 from django.contrib import auth
 from channels.db import database_sync_to_async
 from urllib.parse import parse_qs
+from app_auth.models import Token
 
 
 class TokenMiddleware:
@@ -25,11 +26,15 @@ class TokenMiddleware:
 
         try:
             token = request.headers['token']
-            user = auth.authenticate(token=token)
+
+            token_object = Token.objects.filter(token=token).first()
+
+            if token_object and token_object.active:
+                user = auth.authenticate(token=token)
+            else:
+                user = None
         except KeyError:
             user = None
-
-        print(user)
 
         if not user:
             raise PermissionDenied
