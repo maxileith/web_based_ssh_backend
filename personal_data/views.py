@@ -7,13 +7,17 @@ from django.forms.models import model_to_dict
 from django.contrib.auth import password_validation as validator
 from django.core.exceptions import ValidationError
 import re
+import os
 
 from django.contrib.auth.models import User
 
 
-@api_view(['GET', 'PATCH'])
+@api_view(['GET', 'PATCH', 'DELETE'])
 @login_required(redirect_field_name=None)
 def details(request):
+
+    WAY_TO_KNOWN_HOSTS = '../ssh/known_hosts/'
+
     if request.method == 'GET':
         user = model_to_dict(request.user, fields=[
             'username', 'first_name', 'last_name', 'email'])
@@ -102,3 +106,18 @@ def details(request):
             },
             status=status.HTTP_200_OK
         )
+
+    if request.method == 'DELETE':
+        user: User = request.user
+        u_id = request.user.id
+
+        user.delete()
+
+        working_dir = os.path.dirname(os.path.realpath(__file__))
+        file_name = f'{u_id}.keys'
+        path = os.path.join(working_dir, WAY_TO_KNOWN_HOSTS, file_name)
+
+        if os.path.exists(path):
+            os.remove(path)
+
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)

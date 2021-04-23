@@ -9,6 +9,7 @@ class TokenMiddleware:
     get_response = None
 
     WHITELIST = [
+        '/auth/register/',
         '/auth/login/',
         '/admin/',
     ]
