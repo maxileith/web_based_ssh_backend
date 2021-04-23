@@ -17,6 +17,8 @@ from datetime import datetime, timedelta
 from web_based_ssh_backend import settings
 from .models import Token
 
+import re
+
 
 def list_content_matches(list1, list2):
     return set(list1) == set(list2)
@@ -90,6 +92,17 @@ def register(request):
             return JsonResponse(
                 {
                     'message': 'Password does not meet the password policies.'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # check email syntax
+        pattern = re.compile(
+            '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+        if not pattern.match(request.data['email']):
+            return JsonResponse(
+                {
+                    'message': 'E-Mail is not valid.'
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
