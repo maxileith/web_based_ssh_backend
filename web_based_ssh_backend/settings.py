@@ -162,3 +162,4 @@ CORS_ALLOW_HEADERS = [
 ]
 
 SSH_KEY_DIRECTORY = os.path.join(BASE_DIR, 'ssh_keys')
+KNOWN_HOSTS_DIRECTORY = os.path.join(BASE_DIR, 'ssh', 'known_hosts')

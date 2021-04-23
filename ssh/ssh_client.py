@@ -5,6 +5,7 @@ from time import sleep
 import queue
 from io import StringIO
 import paramiko
+from web_based_ssh_backend.settings import KNOWN_HOSTS_DIRECTORY
 
 
 class SSHClientController:
@@ -215,12 +216,10 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
                                   key, known_host_keys_path)
 
     def __known_hosts_path(self):
-        # get the current working directory
-        working_dir = os.path.dirname(os.path.realpath(__file__))
         # name of known hosts file
         file_name = f'{str(self.__user_id)}.keys'
         # concat everything
-        path = os.path.join(working_dir, 'known_hosts', file_name)
+        path = os.path.join(KNOWN_HOSTS_DIRECTORY, file_name)
 
         try:
             f = open(path, 'x')

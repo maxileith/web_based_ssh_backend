@@ -8,6 +8,7 @@ from django.contrib.auth import password_validation as validator
 from django.core.exceptions import ValidationError
 import re
 import os
+from web_based_ssh_backend.settings import KNOWN_HOSTS_DIRECTORY
 
 from django.contrib.auth.models import User
 
@@ -15,8 +16,6 @@ from django.contrib.auth.models import User
 @api_view(['GET', 'PATCH', 'DELETE'])
 @login_required(redirect_field_name=None)
 def details(request):
-
-    WAY_TO_KNOWN_HOSTS = '../ssh/known_hosts/'
 
     if request.method == 'GET':
         user = model_to_dict(request.user, fields=[
@@ -113,9 +112,8 @@ def details(request):
 
         user.delete()
 
-        working_dir = os.path.dirname(os.path.realpath(__file__))
         file_name = f'{u_id}.keys'
-        path = os.path.join(working_dir, WAY_TO_KNOWN_HOSTS, file_name)
+        path = os.path.join(KNOWN_HOSTS_DIRECTORY, file_name)
 
         if os.path.exists(path):
             os.remove(path)
