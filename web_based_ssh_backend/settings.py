@@ -55,7 +55,7 @@ MIDDLEWARE = [
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'web_based_ssh_backend.middle.DisableCSRFMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'web_based_ssh_backend.middle.PreventAuthenticationAfterLogout',
+    # 'web_based_ssh_backend.middle.PreventAuthenticationAfterLogout',
     'web_based_ssh_backend.middle.TokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
