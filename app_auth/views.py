@@ -27,8 +27,6 @@ def login(request):
 
     if request.method == "POST":
 
-        print(request.data.keys())
-
         if not list_content_matches(request.data.keys(), ['username', 'password']):
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 

@@ -205,4 +205,3 @@ def ssh_key_upload(request, id):
     with open(filepath, 'wb+') as destination:
         for chunk in file.chunks():
             destination.write(chunk)
-

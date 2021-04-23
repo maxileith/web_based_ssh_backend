@@ -10,7 +10,7 @@ class SSHSession(models.Model):
     """
     title = models.CharField(max_length=255)
     hostname = models.CharField(max_length=255)
-    port = models.IntegerField()
+    port = models.IntegerField(default=22)
     username = models.CharField(max_length=255)
     description = models.CharField(max_length=500, blank=True)
     password = models.CharField(max_length=500)
