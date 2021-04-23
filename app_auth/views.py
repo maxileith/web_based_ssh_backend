@@ -60,6 +60,12 @@ def login(request):
 @login_required
 def logout_view(request):
     if request.method == "POST":
+        t = request.headers["Token"]
+        if t:
+            token = Token.objects.filter(token=t).first()
+            if token:
+                token.active = False
+                token.save()
         logout(request)
         return HttpResponse(status=204)
     return HttpResponse(status=405)
