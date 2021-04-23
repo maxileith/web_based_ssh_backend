@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http.response import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
+import time
 
 from web_based_ssh_backend import settings
 from .models import SSHSession
@@ -198,10 +199,22 @@ def details(request, id):
             )
 
 
-def ssh_key_upload(request, id):
+def ssh_key_upload(request, session_id):
+    session = SSHSession.objects.filter(pk=session_id, user=request.user).first()
+
+    if not session:
+        return HttpResponse(status=404)
+
     file = request.FILES['key']
-    filepath = os.path.join(settings.SSH_KEY_DIRECTORY, 'wb+')
+    filepath = os.path.join(settings.SSH_KEY_DIRECTORY, request.user.username + str(int(time.time()))
+                            + ".key")
 
     with open(filepath, 'wb+') as destination:
         for chunk in file.chunks():
             destination.write(chunk)
+    print(filepath)
+
+    session.key_file = filepath
+    session.save()
+
+    return HttpResponse(status=200)
