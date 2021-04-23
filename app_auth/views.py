@@ -3,6 +3,8 @@ from django.http import HttpResponse, JsonResponse
 import json
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import password_validation as validator
+from django.core.exceptions import ValidationError
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -16,19 +18,27 @@ from web_based_ssh_backend import settings
 from .models import Token
 
 
+def list_content_matches(list1, list2):
+    return set(list1) == set(list2)
+
+
 @api_view(['POST'])
 def login(request):
 
     if request.method == "POST":
-        content = request.data
+
+        print(request.data.keys())
+
+        if not list_content_matches(request.data.keys(), ['username', 'password']):
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         user = authenticate(
-            username=content['username'], password=content['password'])
+            username=request.data['username'], password=request.data['password'])
 
         if user is not None:
             expires = datetime.utcnow() + timedelta(minutes=120)
             payload = {
-                "username": content['username'],
+                "username": request.data['username'],
                 "exp": expires,
             }
             token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
@@ -58,21 +68,43 @@ def logout_view(request):
 @api_view(['POST'])
 def register(request):
     if request.method == "POST":
-        content = request.data
 
-        # TODO: clean input
+        if not list_content_matches(request.data.keys(), ['username', 'password', 'email', 'last_name', 'first_name']):
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-        if not User.objects.filter(username=content['username']).exists():
-            user = User.objects.create_user(
-                content['username'], content['email'], content['password'])
-            user.last_name = content['last_name']
-            user.first_name = content['first_name']
-            user.save()
+        if User.objects.filter(username=request.data['username']).exists():
+            return JsonResponse(
+                {
+                    'message': 'User already exists.'
+                },
+                status=status.HTTP_409_CONFLICT
+            )
 
-            serializer = UserSerializer(user)
-            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            validator.validate_password(password=request.data['password'])
+        except ValidationError:
+            return JsonResponse(
+                {
+                    'message': 'Password does not meet the password policies.'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        return HttpResponse(status=status.HTTP_409_CONFLICT)
+        user = User.objects.create_user(
+            request.data['username'], request.data['email'], request.data['password'])
+        user.last_name = request.data['last_name']
+        user.first_name = request.data['first_name']
+
+        user.save()
+
+        serializer = UserSerializer(user)
+
+        return JsonResponse(
+            {
+                'message': 'You have successfully registered.'
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 
 @api_view(['GET'])
