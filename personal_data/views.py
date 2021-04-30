@@ -118,4 +118,9 @@ def details(request):
         if os.path.exists(path):
             os.remove(path)
 
-        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
+        return JsonResponse(
+            {
+                'message': 'The user was deleted successfully.'
+            },
+            status=status.HTTP_200_OK
+        )
