@@ -205,16 +205,15 @@ def ssh_key_upload(request, session_id):
     if not session:
         return HttpResponse(status=404)
 
-    file = request.FILES['key']
-    filepath = os.path.join(settings.SSH_KEY_DIRECTORY, request.user.username + str(int(time.time()))
-                            + ".key")
+    if 'key_file' not in request.FILES:
+        return HttpResponse(status=400)
 
-    with open(filepath, 'wb+') as destination:
-        for chunk in file.chunks():
-            destination.write(chunk)
-    print(filepath)
+    file = request.FILES['key_file']
 
-    session.key_file = filepath
+    if session.key_file:
+        session.key_file.delete()
+
+    session.key_file = file
     session.save()
 
     return HttpResponse(status=200)

@@ -161,4 +161,4 @@ CORS_ALLOW_HEADERS = [
     'Access-Control-Allow-Credentials'
 ]
 
-SSH_KEY_DIRECTORY = os.path.join(BASE_DIR, 'ssh_keys')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

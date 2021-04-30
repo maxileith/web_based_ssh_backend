@@ -1,6 +1,15 @@
+import os
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 # Create your models here.
+
+
+def upload_to(path):
+    def wrapper(instance, filename):
+        filename = uuid.uuid4()
+        return os.path.join(path, str(filename) + ".key")
+    return wrapper
 
 
 class SSHSession(models.Model):
@@ -15,7 +24,9 @@ class SSHSession(models.Model):
     description = models.CharField(max_length=500, blank=True)
     password = models.CharField(max_length=500)
     user = models.ForeignKey(User, on_delete=models.deletion.CASCADE)
-    key_file = models.FilePathField(blank=True)
+    key_file = models.FileField(upload_to=upload_to("ssh_keys/"), blank=True)
 
     def __str__(self):
         return self.title
+
+
