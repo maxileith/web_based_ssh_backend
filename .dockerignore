@@ -1,6 +1,5 @@
 .vscode/
 ssh/known_hosts/*.keys
-docker-data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

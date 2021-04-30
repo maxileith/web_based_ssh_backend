@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'feu#nqidm86g=i7v2#uf5uoai(dri+fqg@ddsf96m+u1p-63cw'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -138,8 +138,8 @@ STATIC_URL = '/static/'
 
 ASGI_APPLICATION = "web_based_ssh_backend.asgi.application"
 
-URL_BACKEND = "localhost:8000"
-URL_FRONTEND = "localhost:3000"
+URL_BACKEND = os.environ['URL_BACKEND']
+URL_FRONTEND = os.environ['URL_FRONTEND']
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
@@ -165,10 +165,10 @@ CORS_ALLOW_HEADERS = [
 SSH_KEY_DIRECTORY = os.path.join(BASE_DIR, 'ssh_keys')
 KNOWN_HOSTS_DIRECTORY = os.path.join(BASE_DIR, 'ssh', 'known_hosts')
 
-EMAIL_HOST = 'mail.leith.de'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'webssh@leith.de'
-EMAIL_HOST_PASSWORD = os.environ['EMAIL_PASSWORD']
-EMAIL_USE_TLS = True
+EMAIL_HOST = os.environ['EMAIL_HOST']
+EMAIL_PORT = os.environ['EMAIL_PORT']
+EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+EMAIL_USE_TLS = os.environ['EMAIL_USE_TLS']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

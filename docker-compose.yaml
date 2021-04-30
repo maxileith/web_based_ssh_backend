@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+    websshbackend:
+        container_name: websshbackend
+        build: .
+        restart: always
+        ports:
+            - 127.0.0.1:8000:80
+        env_file:
+            - .env
+        volumes:
+            - ./docker-data/db.sqlite3:/usr/src/app/db.sqlite3
+            - ./docker-data/media/:/usr/src/media/
+        labels:
+            traefik.enable: true
+            traefik.http.routers.websshbackend.entrypoints: http
+            traefik.http.routers.websshbackend.rule: Host(`api.webssh.leith.de`)
+            traefik.http.routers.websshbackend.middlewares: https-redirect@file
+            traefik.http.routers.websshbackend-secure.entrypoints: https
+            traefik.http.services.websshbackend-secure.loadbalancer.server.port: 80
+            traefik.http.routers.websshbackend-secure.middlewares: default-headers@file
+            traefik.http.routers.websshbackend-secure.rule: Host(`api.webssh.leith.de`)
+            traefik.http.routers.websshbackend-secure.tls: true
+            traefik.http.routers.websshbackend-secure.tls.options: myTLSOptions@file
+            traefik.http.routers.websshbackend-secure.tls.certresolver: le
+
+networks:
+    traefik_private:
+        external: true
+    traefik_public:
+        external: true
