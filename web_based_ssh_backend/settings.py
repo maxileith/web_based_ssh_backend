@@ -170,3 +170,5 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'webssh@leith.de'
 EMAIL_HOST_PASSWORD = os.environ['EMAIL_PASSWORD']
 EMAIL_USE_TLS = True
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

@@ -1,4 +1,6 @@
 import json
+
+from channels.db import database_sync_to_async
 from channels.generic.websocket import WebsocketConsumer
 import threading
 
@@ -23,9 +25,14 @@ class SSHConsumer(WebsocketConsumer):
             self.close()
             return
 
+        key_file = None
+        if self.session_data.key_file:
+            key_file = self.session_data.key_file.path
+
         self.ssh_client = SSHClientController(
             self, user_id=self.user.id, hostname=self.session_data.hostname,
-            username=self.session_data.username, password=self.session_data.password)
+            username=self.session_data.username, password=self.session_data.password,
+            rsa_path=key_file, port=self.session_data.port)
 
         self.accept()
 
