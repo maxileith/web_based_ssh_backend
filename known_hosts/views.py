@@ -4,6 +4,7 @@ from django.http.response import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 import os
+from web_based_ssh_backend.settings import KNOWN_HOSTS_DIRECTORY
 
 
 @api_view(['GET', 'PUT'])
@@ -22,11 +23,8 @@ def fileaccess(request):
         JsonResponse: returns JSON object and HTTP status code
     """
 
-    WAY_TO_KNOWN_HOSTS = '../ssh/known_hosts/'
-
-    working_dir = os.path.dirname(os.path.realpath(__file__))
     file_name = f'{request.user.id}.keys'
-    path = os.path.join(working_dir, WAY_TO_KNOWN_HOSTS, file_name)
+    path = os.path.join(KNOWN_HOSTS_DIRECTORY, file_name)
 
     if request.method == 'GET':
 
