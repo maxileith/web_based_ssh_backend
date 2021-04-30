@@ -13,6 +13,7 @@ class TokenMiddleware:
         '/auth/register/',
         '/auth/login/',
         '/admin/',
+        '/auth/email/',
     ]
 
     def __init__(self, get_response):

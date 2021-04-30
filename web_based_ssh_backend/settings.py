@@ -138,13 +138,14 @@ STATIC_URL = '/static/'
 
 ASGI_APPLICATION = "web_based_ssh_backend.asgi.application"
 
+URL_BACKEND = "localhost:8000"
+URL_FRONTEND = "localhost:3000"
+
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = [
-    # behind reverse proxy anyway
-    # "https://webssh.leith.de",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    f"http://{URL_FRONTEND}",
+    f"https://{URL_FRONTEND}",
 ]
 
 CORS_ALLOW_HEADERS = [
@@ -163,3 +164,9 @@ CORS_ALLOW_HEADERS = [
 
 SSH_KEY_DIRECTORY = os.path.join(BASE_DIR, 'ssh_keys')
 KNOWN_HOSTS_DIRECTORY = os.path.join(BASE_DIR, 'ssh', 'known_hosts')
+
+EMAIL_HOST = 'mail.leith.de'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'webssh@leith.de'
+EMAIL_HOST_PASSWORD = os.environ['EMAIL_PASSWORD']
+EMAIL_USE_TLS = True
