@@ -10,7 +10,7 @@ services:
             - .env
         volumes:
             - ./docker-data/db.sqlite3:/usr/src/app/db.sqlite3
-            - ./docker-data/media/:/usr/src/media/
+            - ./docker-data/media/:/usr/src/app/media/
         labels:
             traefik.enable: true
             traefik.http.routers.websshbackend.entrypoints: http
