@@ -18,4 +18,4 @@ COPY . /usr/src/app
 
 EXPOSE 80
 
-CMD ["./start.sh"]
+CMD ["./start_docker.sh"]
