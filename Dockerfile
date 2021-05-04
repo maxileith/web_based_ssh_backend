@@ -9,13 +9,10 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install dependencies
-RUN apt update
-RUN apt install gcc -y
-
-RUN pip install --upgrade pip 
+RUN python -m pip install --upgrade pip 
 COPY ./requirements.txt /usr/src/app
-RUN pip install -r requirements.txt
-RUN pip install uwsgi==2.0.19
+RUN python -m pip install -r requirements.txt
+RUN python -m pip install daphne
 
 # copy project
 COPY . /usr/src/app

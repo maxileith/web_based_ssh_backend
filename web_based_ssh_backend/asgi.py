@@ -8,16 +8,18 @@ https://docs.djangoproject.com/en/3.1/howto/deployment/asgi/
 """
 
 import os
-
-from channels.auth import AuthMiddlewareStack
-from channels.routing import ProtocolTypeRouter, URLRouter
+import django
 from django.core.asgi import get_asgi_application
-from .middle import WSTokenMiddleware
-
-import ssh.routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
                       'web_based_ssh_backend.settings')
+django.setup()
+
+from .middle import WSTokenMiddleware
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
+
+import ssh.routing
 
 application = ProtocolTypeRouter({
     'http': get_asgi_application(),

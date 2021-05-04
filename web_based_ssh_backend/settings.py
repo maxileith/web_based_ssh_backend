@@ -140,6 +140,7 @@ URL_BACKEND = os.environ['URL_BACKEND']
 URL_FRONTEND = os.environ['URL_FRONTEND']
 
 ALLOWED_HOSTS = [
+    "localhost",
     URL_BACKEND
 ]
 
