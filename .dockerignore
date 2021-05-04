@@ -2,7 +2,6 @@
 ssh/known_hosts/*.keys
 docker-data/
 media/*
-!media/.gitkeep
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -9,3 +9,11 @@ class Token(models.Model):
 
     def __str__(self):
         return str(self.user)
+
+
+class UserProfile(models.Model):
+    email_token = models.CharField(max_length=36, null=True)
+    user = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.username

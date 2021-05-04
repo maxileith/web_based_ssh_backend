@@ -1,23 +1,29 @@
 from django.contrib.auth import authenticate, logout
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 import json
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import password_validation as validator
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.decorators import api_view
 
 # Create your views here.
+from app_auth.models import UserProfile
 from app_auth.serializers import UserSerializer
 import jwt
 from datetime import datetime, timedelta
 
 from web_based_ssh_backend import settings
+from web_based_ssh_backend.settings import URL_FRONTEND
 from .models import Token
 
 import re
+
+import uuid
+from app_auth.mail import send_verify_mail
 
 
 def list_content_matches(list1, list2):
@@ -35,7 +41,8 @@ def login(request):
         user = authenticate(
             username=request.data['username'], password=request.data['password'])
 
-        if user is not None:
+        if user is not None and user.is_active == True:
+            print(user.is_active)
             expires = datetime.utcnow() + timedelta(minutes=120)
             payload = {
                 "username": request.data['username'],
@@ -111,14 +118,31 @@ def register(request):
             request.data['username'], request.data['email'], request.data['password'])
         user.last_name = request.data['last_name']
         user.first_name = request.data['first_name']
+        user.is_active = False
 
         user.save()
 
-        serializer = UserSerializer(user)
+        # create new profile
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        # create random string
+        profile.email_token = str(uuid.uuid4())
+
+        try:
+            send_verify_mail(user.email, profile.email_token)
+        except:
+            return JsonResponse(
+                {
+                    'message': 'Could not send verification email.'
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        profile.save()
 
         return JsonResponse(
             {
-                'message': 'You have successfully registered.'
+                'message': 'You have successfully registered. Verify your E-Mail.'
             },
             status=status.HTTP_201_CREATED
         )
@@ -134,3 +158,16 @@ def verify(request):
             },
             status=status.HTTP_200_OK
         )
+
+
+@api_view(['GET'])
+def verify_email(request, token):
+    user_profile = get_object_or_404(UserProfile, email_token=token)
+    user = user_profile.user
+    user.is_active = True
+    user.save()
+
+    user_profile.email_token = None
+    user_profile.save()
+
+    return HttpResponseRedirect(redirect_to=f'http://{URL_FRONTEND}/login')
