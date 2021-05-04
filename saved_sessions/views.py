@@ -1,14 +1,9 @@
-import os
-
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http.response import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
-import time
 
-from web_based_ssh_backend import settings
 from .models import SSHSession
 from .serializers import SSHSessionSerializer, RedactedSSHSessionSerializer
 import json

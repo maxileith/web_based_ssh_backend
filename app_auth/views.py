@@ -1,6 +1,5 @@
 from django.contrib.auth import authenticate, logout
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
-import json
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import password_validation as validator
@@ -10,19 +9,17 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 
+import re
+import uuid
+import jwt
+
 # Create your views here.
 from app_auth.models import UserProfile
-from app_auth.serializers import UserSerializer
-import jwt
 from datetime import datetime, timedelta
 
-from web_based_ssh_backend import settings
-from web_based_ssh_backend.settings import URL_FRONTEND
+from web_based_ssh_backend.settings import URL_FRONTEND, SECRET_KEY
 from .models import Token
 
-import re
-
-import uuid
 from app_auth.mail import send_verify_mail
 
 
@@ -48,7 +45,7 @@ def login(request):
                 "username": request.data['username'],
                 "exp": expires,
             }
-            token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+            token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
             token_object = Token.objects.create(user=user, token=token)
             token_object.save()

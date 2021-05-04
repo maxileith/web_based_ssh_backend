@@ -1,14 +1,14 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.backends import BaseBackend
 import jwt
-from web_based_ssh_backend import settings
+from web_based_ssh_backend.settings import SECRET_KEY
 
 
 class AuthBackend(BaseBackend):
     def authenticate(self, request, token=None):
 
         try:
-            username = jwt.decode(token, settings.SECRET_KEY, algorithms=[
+            username = jwt.decode(token, SECRET_KEY, algorithms=[
                                   "HS256"])['username']
         except Exception:
             return None
