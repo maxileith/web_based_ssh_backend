@@ -1,6 +1,5 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.http.response import JsonResponse, HttpResponse
+from django.http.response import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.forms.models import model_to_dict
