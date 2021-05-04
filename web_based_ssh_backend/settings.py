@@ -25,8 +25,6 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ['DEBUG']
 
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -140,6 +138,10 @@ ASGI_APPLICATION = "web_based_ssh_backend.asgi.application"
 
 URL_BACKEND = os.environ['URL_BACKEND']
 URL_FRONTEND = os.environ['URL_FRONTEND']
+
+ALLOWED_HOSTS = [
+    URL_BACKEND
+]
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True

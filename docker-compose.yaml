@@ -19,10 +19,13 @@ services:
             traefik.http.routers.websshbackend-secure.entrypoints: https
             traefik.http.services.websshbackend-secure.loadbalancer.server.port: 80
             traefik.http.routers.websshbackend-secure.middlewares: default-headers@file
-            traefik.http.routers.websshbackend-secure.rule: Host(`${URL_BACKENDy}`)
+            traefik.http.routers.websshbackend-secure.rule: Host(`${URL_BACKEND}`)
             traefik.http.routers.websshbackend-secure.tls: true
             traefik.http.routers.websshbackend-secure.tls.options: myTLSOptions@file
             traefik.http.routers.websshbackend-secure.tls.certresolver: le
+        networks:
+            traefik_private:
+            traefik_public:
 
 networks:
     traefik_private:

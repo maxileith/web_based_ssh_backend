@@ -20,6 +20,9 @@ RUN pip install uwsgi==2.0.19
 # copy project
 COPY . /usr/src/app
 
+# make startup script executable
+RUN chmod +x start_docker.sh
+
 EXPOSE 80
 
 CMD ["./start_docker.sh"]
