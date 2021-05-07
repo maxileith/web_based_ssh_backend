@@ -1,5 +1,7 @@
 from django.contrib.auth import authenticate, logout
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import password_validation as validator
@@ -18,6 +20,7 @@ from app_auth.models import UserProfile
 from datetime import datetime, timedelta
 
 from web_based_ssh_backend.settings import URL_FRONTEND, SECRET_KEY
+from known_hosts.models import KnownHost
 from .models import Token
 
 from app_auth.mail import send_verify_mail
@@ -119,11 +122,16 @@ def register(request):
 
         user.save()
 
+        known_host = KnownHost.objects.create(user=user)
+        known_host.file = SimpleUploadedFile(content="", name="empty")
+        known_host.save()
+
         # create new profile
         profile, _ = UserProfile.objects.get_or_create(user=user)
 
         # create random string
         profile.email_token = str(uuid.uuid4())
+        profile.save()
 
         try:
             send_verify_mail(user.email, profile.email_token)
@@ -135,7 +143,7 @@ def register(request):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        profile.save()
+        serializer = UserSerializer(user)
 
         return JsonResponse(
             {

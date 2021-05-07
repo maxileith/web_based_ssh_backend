@@ -3,6 +3,7 @@ from channels.generic.websocket import WebsocketConsumer
 import threading
 
 from saved_sessions.models import SSHSession
+from known_hosts.models import KnownHost
 
 from .ssh_client import SSHClientController
 
@@ -27,10 +28,12 @@ class SSHConsumer(WebsocketConsumer):
         if self.session_data.key_file:
             key_file = self.session_data.key_file.path
 
+        known_host = KnownHost.objects.get(user=self.user)
+
         self.ssh_client = SSHClientController(
             self, user_id=self.user.id, hostname=self.session_data.hostname,
             username=self.session_data.username, password=self.session_data.password,
-            rsa_path=key_file, port=self.session_data.port)
+            rsa_path=key_file, port=self.session_data.port, known_host=known_host.file.path)
 
         self.accept()
 
