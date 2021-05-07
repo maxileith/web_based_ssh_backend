@@ -13,7 +13,7 @@ class SSHClientController:
     INTERVAL = 1.0/FPS
     TIMEOUT = 15
 
-    def __init__(self, consumer, user_id: int, hostname: str = None, username: str = None, password: str = None, port:  int = 22, rsa_path: str = None):
+    def __init__(self, consumer, user_id: int, hostname: str = None, username: str = None, password: str = None, port:  int = 22, rsa_path: str = None, known_host:  str = None):
         """__init__ [summary]
 
         Create a controller and give it all the information needed for the connection.
@@ -34,6 +34,7 @@ class SSHClientController:
         self.password = password
         self.port = port
         self.rsa_path = rsa_path
+        self.known_host = known_host
         self.input_queue = queue.Queue()
         self.running = True
 
@@ -45,7 +46,7 @@ class SSHClientController:
         """
         self.client = paramiko.SSHClient()
         key_policy = HostKeyChecker(
-            self.__println, self.__prompt, self.user_id)
+            self.__println, self.__prompt, self.known_host)
         self.client.set_missing_host_key_policy(policy=key_policy)
         if not self.__connect():
             self.consumer.close()
@@ -186,10 +187,10 @@ class SSHClientController:
 
 
 class HostKeyChecker(paramiko.MissingHostKeyPolicy):
-    def __init__(self, println, prompt, user_id):
+    def __init__(self, println, prompt, path):
         self.__println = println
         self.__prompt = prompt
-        self.__user_id = user_id
+        self.__path = path
 
     def missing_host_key(self, client, hostname, key):
         """missing_host_key [summary]
@@ -215,21 +216,7 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
                                   key, known_host_keys_path)
 
     def __known_hosts_path(self):
-        # get the current working directory
-        working_dir = os.path.dirname(os.path.realpath(__file__))
-        # name of known hosts file
-        file_name = f'{str(self.__user_id)}.keys'
-        # concat everything
-        path = os.path.join(working_dir, 'known_hosts', file_name)
-
-        try:
-            f = open(path, 'x')
-            f.close()
-            self.__println('*** INFO: created a new known hosts file')
-        except FileExistsError:
-            pass
-
-        return path
+        return self.__path
 
     def __identify_case(self, hostname, known_host_keys, key):
         if hostname not in known_host_keys or key.get_name() not in known_host_keys[hostname]:

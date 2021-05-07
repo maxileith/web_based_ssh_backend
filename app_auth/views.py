@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, logout
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse, JsonResponse
 import json
 from django.contrib.auth.models import User
@@ -14,6 +15,7 @@ from app_auth.serializers import UserSerializer
 import jwt
 from datetime import datetime, timedelta
 
+from known_hosts.models import KnownHost
 from web_based_ssh_backend import settings
 from .models import Token
 
@@ -100,6 +102,10 @@ def register(request):
         user.first_name = request.data['first_name']
 
         user.save()
+
+        known_host = KnownHost.objects.create(user=user)
+        known_host.file = SimpleUploadedFile(content="", name="empty")
+        known_host.save()
 
         serializer = UserSerializer(user)
 
