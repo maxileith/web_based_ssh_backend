@@ -74,8 +74,9 @@ def logout_view(request):
                 token.active = False
                 token.save()
         logout(request)
-        return HttpResponse(status=204)
-    return HttpResponse(status=405)
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
+    # handled by api_view decorator
+    # return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @api_view(['POST'])
