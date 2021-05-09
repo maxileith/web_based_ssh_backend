@@ -22,6 +22,7 @@ from datetime import datetime, timedelta
 from web_based_ssh_backend.settings import URL_FRONTEND, SECRET_KEY
 from known_hosts.models import KnownHost
 from .models import Token
+from .serializers import UserSerializer
 
 from app_auth.mail import send_verify_mail
 
