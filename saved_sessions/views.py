@@ -197,7 +197,7 @@ def details(request, id):
 
 @api_view(["POST", "DELETE"])
 @login_required(redirect_field_name=None)
-def ssh_key_upload(request, session_id):
+def ssh_key(request, session_id):
     session = SSHSession.objects.filter(
         pk=session_id, user=request.user).first()
 
