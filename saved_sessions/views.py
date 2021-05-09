@@ -60,19 +60,20 @@ def sessions(request):
         except json.JSONDecodeError:
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-        if is_private_host(body['hostname']):
-            return JsonResponse(
-                {
-                    'message': 'Private Hosts are not allowed.',
-                    'details': {}
-                },
-                status=status.HTTP_409_CONFLICT
-            )
-
         session_serializer = SSHSessionSerializer(
             data=body, context={'user': request.user})
 
         if session_serializer.is_valid():
+
+            if is_private_host(body['hostname']):
+                return JsonResponse(
+                    {
+                        'message': 'Private Hosts are not allowed.',
+                        'details': {}
+                    },
+                    status=status.HTTP_409_CONFLICT
+                )
+
             saved_session = session_serializer.save()
 
             result_serializer = RedactedSSHSessionSerializer(saved_session)
@@ -161,6 +162,16 @@ def details(request, id):
         session_serializer = SSHSessionSerializer(data=json_body, partial=True)
 
         if session_serializer.is_valid():
+
+            if is_private_host(json_body['hostname']):
+                return JsonResponse(
+                    {
+                        'message': 'Private Hosts are not allowed.',
+                        'details': {}
+                    },
+                    status=status.HTTP_409_CONFLICT
+                )
+
             updated_session_object = session_serializer.update(selected_session,
                                                                validated_data=session_serializer.validated_data)
 
