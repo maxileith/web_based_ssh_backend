@@ -76,6 +76,7 @@ def sessions(request):
 
 
 @api_view(['GET', 'PATCH', 'DELETE'])
+@login_required(redirect_field_name=None)
 def details(request, id):
     """details [summary]
 
@@ -194,21 +195,34 @@ def details(request, id):
             )
 
 
+@api_view(["POST", "DELETE"])
+@login_required(redirect_field_name=None)
 def ssh_key_upload(request, session_id):
-    session = SSHSession.objects.filter(pk=session_id, user=request.user).first()
+    session = SSHSession.objects.filter(
+        pk=session_id, user=request.user).first()
 
-    if not session:
-        return HttpResponse(status=404)
+    if request.method == 'POST':
 
-    if 'key_file' not in request.FILES:
-        return HttpResponse(status=400)
+        if not session:
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
-    file = request.FILES['key_file']
+        if 'key_file' not in request.FILES:
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-    if session.key_file:
-        session.key_file.delete()
+        file = request.FILES['key_file']
 
-    session.key_file = file
-    session.save()
+        if session.key_file:
+            session.key_file.delete()
 
-    return HttpResponse(status=200)
+        session.key_file = file
+        session.save()
+
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
+
+    elif request.method == 'DELETE':
+        if session.key_file:
+            session.key_file.delete()
+        else:
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)

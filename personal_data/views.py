@@ -107,15 +107,8 @@ def details(request):
 
     if request.method == 'DELETE':
         user: User = request.user
-        u_id = request.user.id
 
         user.delete()
-
-        file_name = f'{u_id}.keys'
-        path = os.path.join(KNOWN_HOSTS_DIRECTORY, file_name)
-
-        if os.path.exists(path):
-            os.remove(path)
 
         return JsonResponse(
             {
