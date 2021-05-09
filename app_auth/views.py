@@ -43,7 +43,6 @@ def login(request):
             username=request.data['username'], password=request.data['password'])
 
         if user is not None and user.is_active == True:
-            print(user.is_active)
             expires = datetime.utcnow() + timedelta(minutes=120)
             payload = {
                 "username": request.data['username'],
