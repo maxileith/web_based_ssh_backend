@@ -5,7 +5,16 @@ from web_based_ssh_backend.settings import URL_BACKEND, EMAIL_HOST_USER
 
 
 def send_verify_mail(adress, token):
+    """send_verify_mail [summary]
 
+            Send email which enables a user the verification of an account
+
+            Args:
+                adress: backend url
+                token: verification token
+
+            Returns: None
+            """
     html_message = loader.render_to_string(
         'app_auth/verify.html',
         {

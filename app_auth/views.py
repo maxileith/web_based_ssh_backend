@@ -33,6 +33,16 @@ def list_content_matches(list1, list2):
 
 @api_view(['POST'])
 def login(request):
+    """login [summary]
+
+            Enables the login for a user. Creates a new JWT Token for the user and transmits the newly generated
+            token to the user.
+
+            Args:
+                request:  request object passed by Django
+
+            Returns: HttpResponse or JsonResponse
+            """
 
     if request.method == "POST":
 
@@ -42,8 +52,7 @@ def login(request):
         user = authenticate(
             username=request.data['username'], password=request.data['password'])
 
-        if user is not None and user.is_active == True:
-            print(user.is_active)
+        if user is not None and user.is_active:
             expires = datetime.utcnow() + timedelta(minutes=120)
             payload = {
                 "username": request.data['username'],
@@ -67,6 +76,16 @@ def login(request):
 @api_view(['POST'])
 @login_required
 def logout_view(request):
+    """logout_view [summary]
+
+            Enables the logout of a user. Disables the used JWT Token and logs the user out.
+
+            Args:
+                request:  request object passed by Django
+
+            Returns: HttpResponse
+            """
+
     if request.method == "POST":
         t = request.headers["Token"]
         if t:
@@ -76,12 +95,21 @@ def logout_view(request):
                 token.save()
         logout(request)
         return HttpResponse(status=status.HTTP_204_NO_CONTENT)
-    # handled by api_view decorator
-    # return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @api_view(['POST'])
 def register(request):
+    """register [summary]
+
+            Enables registration of new users. Creates new entry in DB, a new empty
+            known_host file, a new user profile and sends verification email.
+
+            Args:
+                request:  request object passed by Django
+
+            Returns: JsonResponse - returns status message
+            """
+
     if request.method == "POST":
 
         if not list_content_matches(request.data.keys(), ['username', 'password', 'email', 'last_name', 'first_name']):
@@ -158,6 +186,16 @@ def register(request):
 @api_view(['GET'])
 @login_required(redirect_field_name=None)
 def verify(request):
+    """verify [summary]
+
+            Checks whether user is logged in.
+
+            Args:
+                request:  request object passed by Django
+
+            Returns: JsonResponse - login status
+            """
+
     if request.method == 'GET':
         return JsonResponse(
             {
@@ -169,6 +207,17 @@ def verify(request):
 
 @api_view(['GET'])
 def verify_email(request, token):
+    """verify_email [summary]
+
+            Verifies the email address of a user and enables the user.
+
+            Args:
+                request:  request object passed by Django
+                token: token used to identify user
+
+            Returns: HttpResponseRedirect - redirect to login page
+            """
+
     user_profile = get_object_or_404(UserProfile, email_token=token)
     user = user_profile.user
     user.is_active = True
