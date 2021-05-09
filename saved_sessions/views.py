@@ -34,7 +34,7 @@ def sessions(request):
             message = 'No sessions are saved.'
         else:
             status_code = status.HTTP_200_OK
-            message = 'Operation was successful.'
+            message = 'Session were returned successfully.'
 
         sessions_serializer = RedactedSSHSessionSerializer(sessions, many=True)
 
@@ -60,7 +60,7 @@ def sessions(request):
 
             return JsonResponse(
                 {
-                    'message': 'Operation was successful',
+                    'message': 'Session added successfully.',
                     'details': result_serializer.data
                 },
                 status=status.HTTP_201_CREATED
@@ -109,7 +109,7 @@ def details(request, id):
         session_serializer = RedactedSSHSessionSerializer(session)
 
         return JsonResponse({
-            "message": "Operation was successful.",
+            "message": "Session details returned successfully.",
             "details": session_serializer.data
         }, status=status.HTTP_200_OK)
 
@@ -150,7 +150,7 @@ def details(request, id):
 
             return JsonResponse(
                 {
-                    "message": "Operation was successful.",
+                    "message": "Session updated successfully.",
                     'details': result_serializer.data
                 },
                 status=status.HTTP_200_OK)
