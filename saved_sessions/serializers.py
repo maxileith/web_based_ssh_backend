@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 class SSHSessionSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=255, allow_blank=True)
+    key_file = serializers.BooleanField()
 
     class Meta:
         model = SSHSession
@@ -27,4 +28,4 @@ class RedactedSSHSessionSerializer(SSHSessionSerializer):
     class Meta:
         model = SSHSession
         fields = ('id', 'title', 'hostname', 'port',
-                  'username', 'description')
+                  'username', 'description', 'key_file')
