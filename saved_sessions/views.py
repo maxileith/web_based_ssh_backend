@@ -7,16 +7,8 @@ from rest_framework.decorators import api_view
 from .models import SSHSession
 from .serializers import SSHSessionSerializer, RedactedSSHSessionSerializer
 import json
-import re
 
-from web_based_ssh_backend.settings import DEBUG
-
-
-def is_private_host(hostname):
-    if DEBUG:
-        return False
-    return re.match(
-        '(^127\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)|(localhost)', hostname)
+from ssh.ssh_client import is_private_host
 
 
 @api_view(['GET', 'POST'])
@@ -163,14 +155,17 @@ def details(request, id):
 
         if session_serializer.is_valid():
 
-            if is_private_host(json_body['hostname']):
-                return JsonResponse(
-                    {
-                        'message': 'Private Hosts are not allowed.',
-                        'details': {}
-                    },
-                    status=status.HTTP_409_CONFLICT
-                )
+            try:
+                if is_private_host(json_body['hostname']):
+                    return JsonResponse(
+                        {
+                            'message': 'Private Hosts are not allowed.',
+                            'details': {}
+                        },
+                        status=status.HTTP_409_CONFLICT
+                    )
+            except KeyError:
+                pass
 
             updated_session_object = session_serializer.update(selected_session,
                                                                validated_data=session_serializer.validated_data)
