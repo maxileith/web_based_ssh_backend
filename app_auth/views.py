@@ -26,9 +26,7 @@ from .serializers import UserSerializer
 
 from app_auth.mail import send_verify_mail
 
-
-def list_content_matches(list1, list2):
-    return set(list1) == set(list2)
+from custom_utils import list_content_matches
 
 
 @api_view(['POST'])

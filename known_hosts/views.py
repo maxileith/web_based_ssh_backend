@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 import os
 from .models import KnownHost
+from custom_utils import list_content_matches
 
 
 @api_view(['GET', 'PUT'])
@@ -41,11 +42,11 @@ def fileaccess(request):
             return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
     elif request.method == 'PUT':
+        if not list_content_matches(request.data.keys(), ['content']):
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
         # get known hosts file content
         known_host = get_object_or_404(KnownHost, user=request.user)
-
-        if not 'content' in request.data.keys():
-            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # overwrite content of the known hosts file
