@@ -17,11 +17,11 @@ from ssh.ssh_client import is_private_host
 def sessions(request):
     """sessions [summary]
 
-    - returns all SSH sessions saved for the user on HTTP GET Request
-    - create new SSH session based on HTTP POST Request
+    - returns all SSH sessions saved for the user on HTTP GET request
+    - create new SSH session based on HTTP POST request
 
     Args:
-        request (Request): request object of the http request
+        request (Request): request object of the HTTP request
 
     Returns:
         JsonResponse: returns JSON object and HTTP status code

@@ -15,6 +15,20 @@ from django.contrib.auth.models import User
 @api_view(['GET', 'PATCH', 'DELETE'])
 @login_required(redirect_field_name=None)
 def details(request):
+    """details [summary]
+
+    this endpoint manages the personal details of a user
+    - returns all personal details on HTTP GET request
+    - updates the personal details specified as JSON on a HTTP PATCH request
+        - to change password 'password' and 'old_password' has to be given
+    - deletes a user on HTTP DELETE request
+
+    Args:
+        request (Request): request object of the HTTP request
+
+    Returns:
+        JsonResponse: returns JSON object and HTTP status code
+    """
 
     if request.method == 'GET':
         user = model_to_dict(request.user, fields=[
@@ -25,6 +39,7 @@ def details(request):
         user: User = request.user
 
         if 'password' in request.data.keys() and 'old_password' in request.data.keys():
+            # check if old password is correct
             if not user.check_password(request.data['old_password']):
                 return JsonResponse(
                     {
@@ -32,6 +47,7 @@ def details(request):
                     },
                     status=status.HTTP_403_FORBIDDEN
                 )
+            # check if new password meets the password policy
             try:
                 validator.validate_password(
                     password=request.data['password'], user=user)
@@ -42,10 +58,12 @@ def details(request):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
+            # update password
             user.set_password(request.data['password'])
             request.data.pop('password')
             request.data.pop('old_password')
         elif 'password' in request.data.keys() or 'old_password' in request.data.keys():
+            # password or old_password is missing
             return JsonResponse(
                 {
                     'message': 'To change the password, you need to provide both the old and the new password.'
@@ -54,6 +72,7 @@ def details(request):
             )
 
         if 'email' in request.data.keys():
+            # make sure 'email' is actually an email
             pattern = re.compile(
                 '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
             if not pattern.match(request.data['email']):
@@ -63,6 +82,7 @@ def details(request):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
+            # save new email
             user.email = request.data['email']
             request.data.pop('email')
 
@@ -89,13 +109,17 @@ def details(request):
             request.data.pop('first_name')
 
         if len(request.data.keys()):
+            # if there are still unprocessed attributes in the request, unknown
+            # attributes have been specified. This may be due to a spelling error
+            # in the request, for example.
             return JsonResponse(
                 {
                     'message': 'Unknown attributes.'
                 },
-                status=status.HTTP_409_CONFLICT
+                status=status.HTTP_400_BAD_REQUEST
             )
 
+        # save the changes to the user
         user.save()
 
         return JsonResponse(
