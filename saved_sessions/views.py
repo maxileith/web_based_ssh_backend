@@ -1,5 +1,4 @@
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.http.response import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -13,7 +12,6 @@ from ssh.ssh_client import is_private_host
 
 @api_view(['GET', 'POST'])
 @login_required(redirect_field_name=None)
-@csrf_exempt
 def sessions(request):
     """sessions [summary]
 
