@@ -11,6 +11,16 @@ from web_based_ssh_backend.settings import KNOWN_HOSTS_DIRECTORY, DEBUG
 
 
 def is_private_host(hostname):
+    """is_private_host [summary]
+
+    Checks if the given Domain/IP resolves/is to a private IPv4/v6
+
+    Args:
+        hostname (String): Domain/IP to check
+
+    Returns:
+        Boolean: True if the given hostname resolves to a private IP
+    """
     if DEBUG:
         return False
     # private pattern
@@ -36,8 +46,10 @@ def is_private_host(hostname):
 
 class SSHClientController:
 
+    # how often the output of the SSH Client ist checked
     FPS = 30
     INTERVAL = 1.0/FPS
+    # Timeout of the SSH Client (seconds)
     TIMEOUT = 15
 
     def __init__(self, consumer, user_id: int, hostname: str = None, username: str = None, password: str = None, port:  int = 22, rsa_path: str = None, known_host:  str = None):
@@ -69,21 +81,32 @@ class SSHClientController:
         """run [summary]
 
         main programme logic
+        this method has to be called to start the SSH Client
 
         """
-
+        # prevent connection to private hosts
         if is_private_host(self.hostname):
             self.__println("private hosts are not allowed")
             self.consumer.close()
             return
+
+        # new paramiko client
         self.client = paramiko.SSHClient()
+
+        # set custom host key policy
         key_policy = HostKeyChecker(
             self.__println, self.__prompt, self.known_host)
         self.client.set_missing_host_key_policy(policy=key_policy)
+
+        # try to connect and quit if it fails
         if not self.__connect():
             self.consumer.close()
             return
+
+        # start the interactive shell
         self.__interactive_shell()
+
+        # close client and the consumer that started the thread
         self.client.close()
         self.consumer.close()
 
@@ -100,7 +123,7 @@ class SSHClientController:
     def stop(self):
         """stop [summary]
 
-        Disconnects from the SSH server and terminates the client.
+        Stops the main loop
 
         """
         self.running = False
@@ -135,7 +158,7 @@ class SSHClientController:
             prompt (str, optional): Prompt text. Defaults to ''.
 
         Returns:
-            str: Response from consumer
+            str: Response from user
         """
         # send text
         self.__print(prompt)
@@ -192,14 +215,16 @@ class SSHClientController:
         def __loop_tasks():
             while not channel.closed and self.running:
                 sleep(self.INTERVAL)
-                # output ot client
+                # send output to consumer
                 while channel.recv_ready():
+                    # raw data to unicode
                     r = u(channel.recv(1024))
+                    # EOF - End of File
                     if len(r) == 0:
                         return
                     self.__send(r)
 
-                # input from client
+                # flush input queue by sending the data
                 while channel.send_ready() and not self.input_queue.empty():
                     channel.send(u(self.input_queue.get()))
 
@@ -208,7 +233,7 @@ class SSHClientController:
     def __send(self, x: str):
         """__send [summary]
 
-        Sends data to the consumer.
+        Sends data to the user.
 
         Args:
             x (str): data to be send
@@ -227,30 +252,39 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
     def missing_host_key(self, client, hostname, key):
         """missing_host_key [summary]
 
-        Throws an exception if the key is not accepted
+        - Throws an exception if the key is not accepted
+        - Asks if the user wants to add the key
+        - Asks if the user wants to updated the key
 
         Args:
             client (): -
             hostname (str): hostname of the connection which is to be established
             key (str): key of the server to which the connection is to be established
         """
-        known_host_keys_path = self.__known_hosts_path()
         # load and return known host keys
-        known_host_keys = paramiko.util.load_host_keys(known_host_keys_path)
+        known_host_keys = paramiko.util.load_host_keys(self.__path)
         # check if key is known, changed or unknown
         case = self.__identify_case(hostname, known_host_keys, key)
         # ask the user what to do if needed
         if case == "unknown":
-            self.__handle_unknown(hostname, known_host_keys,
-                                  key, known_host_keys_path)
+            self.__handle_unknown(hostname, known_host_keys, key)
         elif case == "changed":
-            self.__handle_changed(hostname, known_host_keys,
-                                  key, known_host_keys_path)
-
-    def __known_hosts_path(self):
-        return self.__path
+            self.__handle_changed(hostname, known_host_keys, key)
 
     def __identify_case(self, hostname, known_host_keys, key):
+        """__identify_case [summary]
+
+        Identifies if the host key to check is known, unknown or has changed
+
+        Args:
+            hostname (String): Hostname
+            known_host_keys ([type]): Known host Keys
+            key ([type]): host key to check
+
+        Returns:
+            "unknown" | "changed" | "known": returns if the host key to check is known,
+                                             unknown or has changed
+        """
         if hostname not in known_host_keys or key.get_name() not in known_host_keys[hostname]:
             # host key is new
             return "unknown"
@@ -260,33 +294,69 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
         # host key is known
         return "known"
 
-    def __handle_unknown(self, hostname, known_host_keys, key, known_host_keys_path):
+    def __handle_unknown(self, hostname, known_host_keys, key):
+        """__handle_unknown [summary]
+
+        - print warning with the key to check
+        - ask if the key is alright
+        - add the key to known hosts if the user accepts the key
+        - raise HostKeyError if the user declines the key
+
+        Args:
+            hostname (String): hostname
+            known_host_keys: known hosts
+            key (String): new key
+
+        Raises:
+            HostKeyError: [description]
+        """
+        # warning
         self.__println(
             f'*** WARNING: Unknown host key: {key.get_base64()}')
+
+        # ask the user if he / she wants to add the key
         add = self.__prompt(
             "Add the host key to known hosts? (y/N): ")
-
         if add.capitalize() == 'Y':
             known_host_keys.add(hostname=hostname,
                                 keytype='ssh-rsa', key=key)
-            known_host_keys.save(known_host_keys_path)
+            known_host_keys.save(self.__path)
             self.__println(
                 '*** INFO: Added host key to known hosts!')
             return
 
         raise HostKeyError
 
-    def __handle_changed(self, hostname, known_host_keys, key, known_host_keys_path):
+    def __handle_changed(self, hostname, known_host_keys, key):
+        """__handle_changed [summary]
+
+        - print warning with the old key and the key to check
+        - ask if the new key is alright
+        - update the key in the known hosts file if the user accepts the new key
+        - raise HostKeyError if the user declines the new key 
+
+        Args:
+            hostname (String): hostname
+            known_host_keys: known hosts
+            key (String): new key
+
+        Raises:
+            HostKeyError: [description]
+        """
+        # warning
         self.__println('*** WARNING: Host key has changed!')
         self.__println(
             f'*** Old Key: {known_host_keys[hostname][key.get_name()].get_base64()}')
         self.__println(f'*** New Key: {key.get_base64()}')
-        update = self.__prompt('Update the host key? (y/N): ')
 
+        # ask the user if he / she wants to update the key
+        update = self.__prompt('Update the host key? (y/N): ')
         if update.capitalize() == 'Y':
+            # delete old key
             del known_host_keys[hostname]
+            # add new key
             known_host_keys.add(hostname=hostname, keytype='ssh-rsa', key=key)
-            known_host_keys.save(known_host_keys_path)
+            known_host_keys.save(self.__path)
             self.__println('*** Info: Host key updated!')
             return
 
@@ -294,4 +364,9 @@ class HostKeyChecker(paramiko.MissingHostKeyPolicy):
 
 
 class HostKeyError(Exception):
+    """HostKeyError [summary]
+
+    just a generic Exception to use if a host key is not valid
+
+    """
     pass
