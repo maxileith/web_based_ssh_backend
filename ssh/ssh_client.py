@@ -1,11 +1,37 @@
 import json
 import os
+import socket
+import re
 from paramiko.py3compat import u
 from time import sleep
 import queue
 from io import StringIO
 import paramiko
-from web_based_ssh_backend.settings import KNOWN_HOSTS_DIRECTORY
+from web_based_ssh_backend.settings import KNOWN_HOSTS_DIRECTORY, DEBUG
+
+
+def is_private_host(hostname):
+    if DEBUG:
+        return False
+    # private pattern
+    pattern4 = '(^127\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^192\.168\.)|(^169\.254\.)'
+    pattern6 = '(^::1$)|(^[fF][cCdD])'
+    # check if ipv6 is private
+    try:
+        ipv6 = socket.getaddrinfo(hostname, None, socket.AF_INET6)[0][4][0]
+        if re.match(pattern6, ipv6):
+            return True
+    except socket.gaierror:
+        pass
+    # check if ipv4 is private
+    try:
+        ipv4 = socket.getaddrinfo(hostname, None)[0][4][0]
+        if re.match(pattern4, ipv4):
+            return True
+    except socket.gaierror:
+        pass
+
+    return False
 
 
 class SSHClientController:
@@ -45,6 +71,11 @@ class SSHClientController:
         main programme logic
 
         """
+
+        if is_private_host(self.hostname):
+            self.__println("private hosts are not allowed")
+            self.consumer.close()
+            return
         self.client = paramiko.SSHClient()
         key_policy = HostKeyChecker(
             self.__println, self.__prompt, self.known_host)

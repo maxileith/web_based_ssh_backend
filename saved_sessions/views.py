@@ -8,6 +8,8 @@ from .models import SSHSession
 from .serializers import SSHSessionSerializer, RedactedSSHSessionSerializer
 import json
 
+from ssh.ssh_client import is_private_host
+
 
 @api_view(['GET', 'POST'])
 @login_required(redirect_field_name=None)
@@ -54,6 +56,16 @@ def sessions(request):
             data=body, context={'user': request.user})
 
         if session_serializer.is_valid():
+
+            if is_private_host(body['hostname']):
+                return JsonResponse(
+                    {
+                        'message': 'Private Hosts are not allowed.',
+                        'details': {}
+                    },
+                    status=status.HTTP_409_CONFLICT
+                )
+
             saved_session = session_serializer.save()
 
             result_serializer = RedactedSSHSessionSerializer(saved_session)
@@ -142,6 +154,19 @@ def details(request, id):
         session_serializer = SSHSessionSerializer(data=json_body, partial=True)
 
         if session_serializer.is_valid():
+
+            try:
+                if is_private_host(json_body['hostname']):
+                    return JsonResponse(
+                        {
+                            'message': 'Private Hosts are not allowed.',
+                            'details': {}
+                        },
+                        status=status.HTTP_409_CONFLICT
+                    )
+            except KeyError:
+                pass
+
             updated_session_object = session_serializer.update(selected_session,
                                                                validated_data=session_serializer.validated_data)
 

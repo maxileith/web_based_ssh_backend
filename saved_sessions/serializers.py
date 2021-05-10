@@ -4,12 +4,12 @@ from rest_framework import serializers
 
 class SSHSessionSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=255, allow_blank=True)
-    key_file = serializers.BooleanField()
+    key_file = serializers.BooleanField(required=False)
 
     class Meta:
         model = SSHSession
         fields = ('id', 'title', 'hostname', 'port',
-                  'username', 'description', 'password')
+                  'username', 'description', 'password', 'key_file')
 
     def create(self, validated_data):
         instance = SSHSession.objects.create(user=self.context['user'])

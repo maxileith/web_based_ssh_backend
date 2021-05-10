@@ -52,7 +52,7 @@ def login(request):
         user = authenticate(
             username=request.data['username'], password=request.data['password'])
 
-        if user is not None and user.is_active:
+        if user is not None and user.is_active == True:
             expires = datetime.utcnow() + timedelta(minutes=120)
             payload = {
                 "username": request.data['username'],

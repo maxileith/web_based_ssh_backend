@@ -1,7 +1,6 @@
 .vscode/
-ssh/known_hosts/*.keys
-docker-data/
-media/*
+media/known_hosts/*.key
+media/ssh_keys/*.key
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -132,5 +131,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-ssh_keys/*.key
