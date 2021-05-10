@@ -14,7 +14,6 @@ def fileaccess(request):
 
     - returns the known hosts file associated with the user on HTTP GET request.
     - overwrites the known hists file associated with the user on HTTP PUT request.
-    - if the known hosts file does not exist, a new one is created.
 
     Args:
         request (Request): request object of the http request
@@ -24,22 +23,11 @@ def fileaccess(request):
     """
 
     if request.method == 'GET':
-        """
-            # get known hosts file content, otherwise create a new one
-            try:
-                with open(path, mode='r') as f:
-                    file_content = f.read()
-                    status_code = status.HTTP_200_OK
-            except FileNotFoundError:
-                f = open(path, mode='x')
-                f.close()
-                file_content = ''
-                status_code = status.HTTP_201_CREATED
-        """
-        # get known hosts file content, otherwise create a new one
+        # get known hosts file content
         known_host = get_object_or_404(KnownHost, user=request.user)
 
         try:
+            # open and read file, then return the content
             with open(known_host.file.path, mode='r') as f:
                 file_content = f.read()
 
@@ -53,13 +41,18 @@ def fileaccess(request):
             return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
     elif request.method == 'PUT':
+        # get known hosts file content
         known_host = get_object_or_404(KnownHost, user=request.user)
 
+        if not 'content' in request.data.keys():
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
         try:
+            # overwrite content of the known hosts file
             with open(known_host.file.path, mode='w') as f:
                 f.truncate()
                 f.write(request.data['content'])
         except FileNotFoundError:
-            return HttpResponse(status=404)
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
         return HttpResponse(status=status.HTTP_204_NO_CONTENT)

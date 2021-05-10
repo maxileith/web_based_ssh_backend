@@ -23,5 +23,6 @@ rename_path = RenamePath('known_hosts/')
 
 
 class KnownHost(models.Model):
+    # CASCADE --> delete entity if the corresponding user is to be deleted
     user = models.OneToOneField(User, on_delete=models.deletion.CASCADE)
     file = models.FileField(upload_to=rename_path)
