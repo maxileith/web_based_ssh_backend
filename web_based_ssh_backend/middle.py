@@ -60,10 +60,26 @@ def authenticate(token):
 
 
 class WSTokenMiddleware:
+    """Verifies JWT token for WebSocket Backend"""
     def __init__(self, app):
         self.app = app
 
     async def __call__(self, scope, receive, send):
+        """__call__ [summary]
+
+        verifies supplied JWT Token and authenticates user
+        - read JWT from query parameters
+        - authenticate user using JWT
+
+        Note: arguments are required by framework
+        Args:
+            scope: stores current variables
+            receive: receive data
+            send: send data
+
+        Returns:
+            App: returns app
+        """
 
         # get user by token, otherwise raise PermissionDenied
         try:
@@ -83,6 +99,7 @@ class WSTokenMiddleware:
 
 
 class DisableCSRFMiddleware:
+    """Disables CSRF verification - not needed since JWTs are used"""
     def __init__(self, get_response):
         self.get_response = get_response
 

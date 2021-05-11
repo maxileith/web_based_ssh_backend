@@ -37,7 +37,7 @@ def login(request):
             token to the user.
 
             Args:
-                request:  request object passed by Django
+                request (Request):  request object passed by Django
 
             Returns: HttpResponse or JsonResponse
             """
@@ -79,7 +79,7 @@ def logout_view(request):
             Enables the logout of a user. Disables the used JWT Token and logs the user out.
 
             Args:
-                request:  request object passed by Django
+                request (Request):  request object passed by Django
 
             Returns: HttpResponse
             """
@@ -103,7 +103,7 @@ def register(request):
             known_host file, a new user profile and sends verification email.
 
             Args:
-                request:  request object passed by Django
+                request (Request):  request object passed by Django
 
             Returns: JsonResponse - returns status message
             """
@@ -189,7 +189,7 @@ def verify(request):
             Checks whether user is logged in.
 
             Args:
-                request:  request object passed by Django
+                request (Request):  request object passed by Django
 
             Returns: JsonResponse - login status
             """
@@ -210,7 +210,7 @@ def verify_email(request, token):
             Verifies the email address of a user and enables the user.
 
             Args:
-                request:  request object passed by Django
+                request (Request):  request object passed by Django
                 token: token used to identify user
 
             Returns: HttpResponseRedirect - redirect to login page

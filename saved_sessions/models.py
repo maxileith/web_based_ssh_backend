@@ -8,6 +8,7 @@ from django.utils.deconstruct import deconstructible
 
 @deconstructible
 class RenamePath:
+    """Wrapper around a function to rename files before saving"""
     def __init__(self, path):
         self.path = path
 
