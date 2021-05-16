@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 
 
 class Token(models.Model):
+    """Represents a JWT Token"""
+
     token = models.CharField(max_length=500)
     user = models.ForeignKey(User, on_delete=models.deletion.CASCADE)
     active = models.BooleanField(default=True)
@@ -12,6 +14,8 @@ class Token(models.Model):
 
 
 class UserProfile(models.Model):
+    """Represents a UserProfile. One profile exists per user."""
+
     email_token = models.CharField(max_length=36, null=True)
     user = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
 

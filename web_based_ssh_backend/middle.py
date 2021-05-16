@@ -6,9 +6,17 @@ from app_auth.models import Token
 
 
 class TokenMiddleware:
+    """TokenMiddleware [summary]
+
+    - middleware that extracts the jwt token from the request
+    - checks if token is valid
+
+
+    """
 
     get_response = None
 
+    # these paths must be reachable without a token
     WHITELIST = [
         '/auth/register/',
         '/auth/login/',
@@ -25,6 +33,7 @@ class TokenMiddleware:
             if e in request.META['PATH_INFO']:
                 return self.get_response(request)
 
+        # get user by token, otherwise raise PermissionDenied
         try:
             token = request.headers['token']
 
@@ -51,12 +60,31 @@ def authenticate(token):
 
 
 class WSTokenMiddleware:
+    """Verifies JWT token for WebSocket Backend"""
     def __init__(self, app):
         self.app = app
 
     async def __call__(self, scope, receive, send):
+        """__call__ [summary]
 
+        verifies supplied JWT Token and authenticates user
+        - read JWT from query parameters
+        - authenticate user using JWT
+
+        Note: arguments are required by framework
+        Args:
+            scope: stores current variables
+            receive: receive data
+            send: send data
+
+        Returns:
+            App: returns app
+        """
+
+        # get user by token, otherwise raise PermissionDenied
         try:
+            # token in URL, because WS in JavaScript does not allow to add
+            # custom headers
             token = parse_qs(scope["query_string"].decode("utf8"))["token"][0]
             user = await authenticate(token=token)
         except KeyError:
@@ -71,6 +99,7 @@ class WSTokenMiddleware:
 
 
 class DisableCSRFMiddleware:
+    """Disables CSRF verification - not needed since JWTs are used"""
     def __init__(self, get_response):
         self.get_response = get_response
 

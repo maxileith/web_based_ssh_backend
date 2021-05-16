@@ -1,5 +1,4 @@
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.http.response import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -13,15 +12,14 @@ from ssh.ssh_client import is_private_host
 
 @api_view(['GET', 'POST'])
 @login_required(redirect_field_name=None)
-@csrf_exempt
 def sessions(request):
     """sessions [summary]
 
-    - returns all SSH sessions saved for the user on HTTP GET Request
-    - create new SSH session based on HTTP POST Request
+    - returns all SSH sessions saved for the user on HTTP GET request
+    - create new SSH session based on HTTP POST request
 
     Args:
-        request (Request): request object of the http request
+        request (Request): request object of the HTTP request
 
     Returns:
         JsonResponse: returns JSON object and HTTP status code

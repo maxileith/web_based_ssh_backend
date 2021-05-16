@@ -3,6 +3,11 @@ from rest_framework import serializers
 
 
 class SSHSessionSerializer(serializers.ModelSerializer):
+    """Serializes SSHSessions to JSON
+
+        - fields listed below are inside JSON
+        - Note: field key_file describes whether the key file exists
+    """
     password = serializers.CharField(max_length=255, allow_blank=True)
     key_file = serializers.BooleanField(required=False)
 
@@ -12,6 +17,18 @@ class SSHSessionSerializer(serializers.ModelSerializer):
                   'username', 'description', 'password', 'key_file')
 
     def create(self, validated_data):
+        """create [summary]
+
+        creates new SSHSession object from JSON
+        - reads value from JSON and assigns it to the object
+
+        Args:
+            validated_data: validated by djangorestframework
+
+        Returns:
+            SSHSession: returns newly created SSHSession
+        """
+
         instance = SSHSession.objects.create(user=self.context['user'])
         instance.title = validated_data.pop('title')
         instance.password = validated_data.pop('password')
@@ -25,6 +42,12 @@ class SSHSessionSerializer(serializers.ModelSerializer):
 
 
 class RedactedSSHSessionSerializer(SSHSessionSerializer):
+    """Serializes SSHSessions to JSON
+
+           - same behaviour as SSHSessionSerializer
+           -> BUT removes password field from output
+    """
+
     class Meta:
         model = SSHSession
         fields = ('id', 'title', 'hostname', 'port',
