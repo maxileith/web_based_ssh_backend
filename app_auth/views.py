@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import password_validation as validator
 from django.core.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -216,7 +215,10 @@ def verify_email(request, token):
             Returns: HttpResponseRedirect - redirect to login page
             """
 
-    user_profile = get_object_or_404(UserProfile, email_token=token)
+    try:
+        user_profile = UserProfile.objects.get(email_token=token)
+    except UserProfile.DoesNotExist:
+        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
     user = user_profile.user
     user.is_active = True
     user.save()

@@ -1,4 +1,3 @@
-from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http.response import JsonResponse, HttpResponse
 from rest_framework import status
@@ -25,7 +24,10 @@ def fileaccess(request):
 
     if request.method == 'GET':
         # get known hosts file content
-        known_host = get_object_or_404(KnownHost, user=request.user)
+        try:
+            known_host = KnownHost.objects.get(user=request.user)
+        except KnownHost.DoesNotExist:
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
         try:
             # open and read file, then return the content
@@ -46,7 +48,10 @@ def fileaccess(request):
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         # get known hosts file content
-        known_host = get_object_or_404(KnownHost, user=request.user)
+        try:
+            known_host = KnownHost.objects.get(user=request.user)
+        except KnownHost.DoesNotExist:
+            return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
         try:
             # overwrite content of the known hosts file
